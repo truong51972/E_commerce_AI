@@ -1,0 +1,63 @@
+services:
+  nginx:
+    build: 
+      context: ./nginx
+    container_name: nginx__${SERVICE_NAME}
+    restart: always
+    # depends_on:
+      # - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/.htpasswd:/etc/nginx/htpasswd
+      - ./nginx/SSL:/etc/nginx/SSL
+    networks:
+      private-network:
+      microservices-network:
+        aliases: 
+          - nginx__${SERVICE_NAME}
+
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: always
+    volumes:
+      # - ollama:/root/.ollama
+      - open-webui:/app/backend/data
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    volumes:
+      - ollama:/root/.ollama
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+
+
+
+  cloudflare_tunnel:
+    build: 
+      context: ./cloudflare_tunnel
+    container_name: cloudflare_tunnel__${SERVICE_NAME}
+    restart: on-failure:5
+    environment:
+      - TUNNEL_ORIGIN_KEEPALIVE_TIMEOUT=30s
+      - TUNNEL_TOKEN
+      - NO_AUTOUPDATE
+    networks:
+      private-network:
+
+networks:
+  microservices-network:
+    driver: bridge
+
+  private-network:
+    driver: bridge
+
+volumes:
+  ollama:
+  open-webui:

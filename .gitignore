@@ -170,5 +170,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Contain data of service
-.data
+# Ignore all .* files in the root
+.*
