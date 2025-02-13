@@ -18,7 +18,8 @@
 - Cloudflare
 - Docker
 
-
+### Proxy:
+- Nginx
 
 
 ### Bonus
