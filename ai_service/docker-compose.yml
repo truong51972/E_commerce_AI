@@ -2,8 +2,7 @@ services:
   nginx:
     build: 
       context: ./nginx
-    container_name: nginx__${SERVICE_NAME}
-    restart: always
+    restart: on-failure:5
     depends_on:
       - backend
     volumes:
@@ -14,16 +13,20 @@ services:
     networks:
       private-network:
       microservices-network:
-        aliases: 
-          - nginx__${SERVICE_NAME}
-
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1GB
+        reservations:
+          cpus: '0.50'
+          memory: 512MB
+        
 
   backend:
     build: 
       context: ./backend 
-    container_name: backend__${SERVICE_NAME}
-    image: backend__${SERVICE_NAME}
-    restart: always
+    restart: on-failure:5
     volumes:
       - ./backend:/app
       - ./.data:/.data
@@ -36,19 +39,37 @@ services:
       - database
     networks:
       private-network:
+    deploy:
+      resources:
+        limits:
+          cpus: '4.00'
+          memory: 4GB
+        reservations:
+          cpus: '2.00'
+          memory: 2GB
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
 
 
   redis:
     image: redis:latest
-    container_name: redis__${SERVICE_NAME}
+    restart: on-failure:5
     networks:
       private-network:
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1GB
+        reservations:
+          cpus: '0.50'
+          memory: 512MB
 
 
   database:
     image: postgres:latest
-    container_name: database__${SERVICE_NAME}
-    restart: always
+    restart: on-failure:5
     environment:
       - POSTGRES_DB
       - POSTGRES_USER
@@ -57,12 +78,18 @@ services:
       - ./.data/database:/var/lib/postgresql/data
     networks:
       private-network:
-
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1GB
+        reservations:
+          cpus: '0.50'
+          memory: 512MB
 
   cloudflare_tunnel:
     build: 
       context: ./cloudflare_tunnel
-    container_name: cloudflare_tunnel__${SERVICE_NAME}
     restart: on-failure:5
     environment:
       - TUNNEL_ORIGIN_KEEPALIVE_TIMEOUT=30s
@@ -70,6 +97,15 @@ services:
       - NO_AUTOUPDATE
     networks:
       private-network:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512MB
+        reservations:
+          cpus: '0.25'
+          memory: 256MB
+
 
 networks:
   microservices-network:
