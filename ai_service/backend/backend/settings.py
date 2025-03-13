@@ -14,8 +14,11 @@ from pathlib import Path
 import os
 import logging
 
+from dotenv import load_dotenv
+
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent / ".data/backend"
+BASE_DIR = Path(__file__).resolve().parent.parent.parent / ".backend_data"
 
 if not BASE_DIR.exists():
     os.makedirs(BASE_DIR)
@@ -41,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +102,7 @@ else:
     }
 
 
-if os.getenv("USING_REDIS"):
+if os.getenv("USING_REDIS") == "True":
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -158,7 +163,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -172,3 +176,15 @@ logging.basicConfig(
 
 # Add trusted origins for secure
 CSRF_TRUSTED_ORIGINS = ['https://*.truong51972.id.vn', 'http://localhost:*']
+
+# Define for Milvus database
+MILVUS_URI = os.getenv("MILVUS_URI") or "http://localhost:19530"
+MILVUS_TOKEN = os.getenv("MILVUS_TOKEN") or "root:Milvus"
+
+
+EMBEDDING_MODEL = "models/text-embedding-004"
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_MODEL_RENDERING': 'example',
+    # 'DEFAULT_MODEL_DEPTH': 3,
+}

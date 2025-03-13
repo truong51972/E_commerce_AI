@@ -2,7 +2,10 @@ services:
   nginx:
     ports:
       - "80:80"
-
+    volumes:
+      - ./.backend_data:/backend_data
+    profiles:
+      - disabled
 
   backend:
     command : python manage.py runserver 0.0.0.0:8000
@@ -10,8 +13,21 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=True
+    volumes:
+      - ./.backend_data:/backend_data
+    profiles:
+      - disabled
+
+  # disable cloudflare for dev environment
+  cloudflare_tunnel:
+    profiles:
+      - disabled
+
+  standalone:
+    ports:
+      - "19530:19530"
 
 
-  # database:
-    # ports:
-    #   - "5433:5432"
+  attu:
+    ports:
+      - 3000:3000
