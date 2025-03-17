@@ -4,9 +4,13 @@ def row_to_text(row) -> str:
     text = ""
     for col_name, value in row.items():
         text += f"{col_name}: {value} \n"
-        # print(col_name + ": " + value)
-        # break
     return text
+
+def row_to_dict(row) -> str:
+    data = ""
+    for col_name, value in row.items():
+        data[col_name] = value
+    return data
 
 def excel_to_text_list(path) -> list[str]:
     data = pd.read_excel(path)

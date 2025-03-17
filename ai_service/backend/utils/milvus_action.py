@@ -7,6 +7,8 @@ import logging
 from langchain import hub
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.output_parsers import PydanticOutputParser
 
 import langchain
 langchain.debug = True  # Bật debug mode
@@ -56,21 +58,21 @@ class Milvus_Action(BaseModel):
             FieldSchema(
                 name="id", dtype=DataType.INT64, is_primary=True, auto_id=False
             ),
-            FieldSchema(name="product_name", dtype=DataType.VARCHAR, max_length=255),
+            FieldSchema(name="product_name", dtype=DataType.VARCHAR, max_length=512),
             FieldSchema(name="price", dtype=DataType.DOUBLE),
-            FieldSchema(name="description", dtype=DataType.VARCHAR, max_length=8192),
+            FieldSchema(name="description", dtype=DataType.VARCHAR, max_length=16384),
             FieldSchema(
                 name="categories",
                 dtype=DataType.ARRAY,
                 element_type=DataType.VARCHAR,
-                max_length=255,
-                max_capacity=20,
+                max_length=2048,
+                max_capacity=50,
             ),
-            FieldSchema(name="product_link", dtype=DataType.VARCHAR, max_length=1024),
+            FieldSchema(name="product_link", dtype=DataType.VARCHAR, max_length=2048),
             FieldSchema(
                 name="vector", dtype=DataType.FLOAT_VECTOR, dim=embedding_dim
             ),
-            FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=8192),
+            FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=16384),
         ]
         schema = CollectionSchema(fields, description="Product collection with scalar fields")
         collection = Collection(name=self.collection_name, schema=schema)
@@ -102,6 +104,40 @@ class Milvus_Action(BaseModel):
 
         collection.insert(data)
         collection.load()
+
+    def add_or_edit_records(self, data: list[dict[str:str]]):
+        collection = Collection(name=self.collection_name)
+        
+        texts = []
+        logging.info("Loading data...")
+        for record in data:
+            text = "\n".join([
+                f"Product Name: {record['product_name']}",
+                f"Categories: {record['categories']}"
+                f"Description: {record['description']}",
+            ])
+
+            texts.append(text)
+
+            if isinstance(record["categories"], str):
+                record["categories"] = record["categories"].split(', ')
+
+            if isinstance(record["price"], str):
+                record["price"] = float(record["price"].replace(",",""))
+
+        logging.info("Embedding...")
+        vectors = self._embeddings.embed_documents(texts)
+
+        for i in range(len(data)):
+            texts[i] += f"\nProduct Link: {data[i]['product_link']}"
+
+            data[i]["vector"] = vectors[i]
+            data[i]["text"] = texts[i]
+
+        logging.info("Loading data into database...")
+        collection.insert(data)
+        collection.load()
+        logging.info("Done!")
 
     def delete_record(self, id):
         assert self.is_id_exists(id), f"id= {id} does not exist!"
@@ -143,8 +179,7 @@ class Milvus_Action(BaseModel):
 
         return result
 
-
-    def context_search(
+    def quick_search(
         self,
         text,
         price_range: list[float] = [0, 1e9],
@@ -178,7 +213,7 @@ class Milvus_Action(BaseModel):
 
         return result
 
-    def agent_search(self, text):
+    def AI_search(self, text):
         milvus = Milvus(
             embedding_function=self._embeddings,
             collection_name=self.collection_name,
@@ -193,32 +228,122 @@ class Milvus_Action(BaseModel):
             retriever=milvus.as_retriever(),
             combine_docs_chain=stuff_documents_chain,
         )
-        
+
         result = qa.invoke(input={"input": text})
 
         return result["answer"]
 
+    def AI_search_with_context(self, text, user_context=""):
+        milvus = Milvus(
+            embedding_function=self._embeddings,
+            collection_name=self.collection_name,
+            connection_args={"uri": self.milvus_uri, "token": self.milvus_token},
+        )
+
+        class PatternOutput(BaseModel):
+            answer: str = Field(description="Recommended product containing product name, and "
+                                            "a brief description, and product link (if available)"
+            )
+            context: str = Field(
+                description="List the keywords of <user_input> only "
+                            "and keywords have to available in <context>, if not, delete it"
+            )
+
+        parser = PydanticOutputParser(pydantic_object=PatternOutput)
+        retrieval_qa_chat_prompt = """
+System:
+As a customer care and consultation system
+you must recommend products
+using <user_input> question with context
+based solely on the <context> below
+ensure that the output follows <expected_output> format and answering by <user_input>'s language
+
+<context>
+{context}
+</context>
+
+User:
+<user_input>
+{input}
+</user_input>
+
+Expected output:
+<expected_output>
+{format_instructions}
+</expected_output>
+"""
+
+        retrieval_qa_chat_prompt = ChatPromptTemplate.from_template(
+            retrieval_qa_chat_prompt,
+            partial_variables={"format_instructions": parser.get_format_instructions()},
+        )
+        # retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
+
+        stuff_documents_chain = create_stuff_documents_chain(self._llm, retrieval_qa_chat_prompt)
+
+        qa = create_retrieval_chain(
+            retriever=milvus.as_retriever(),
+            combine_docs_chain=stuff_documents_chain,
+        )
+
+        text_with_keyword = f"{text}; {user_context}"
+        result = qa.invoke(input={"input": text_with_keyword})
+        parsed_output = parser.parse(result["answer"]).model_dump()
+        return parsed_output
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
     from dotenv import load_dotenv
+    import pandas as pd
 
     load_dotenv()
+    # milvus = Milvus_Action(collection_name="clothes_gemini")
+    # milvus = Milvus_Action(collection_name="default_collection_name")
+    milvus = Milvus_Action(collection_name="test_05")
 
-    milvus = Milvus_Action(collection_name="default_collection_name")
 
-    # data = {
-    #     "id" : 1,
-    #     "product_name" : "hehe",
-    #     "description" : "description",
-    #     "price" : 10,
-    #     "categories" : ["category_1", "category_2"],
-    #     "product_link" : "product link"
-    # }
+    df = pd.read_excel("./.data/MLB.xlsx")
 
+    data = df.to_dict(orient="records")
+
+    # print(data[0])
+
+    # data = [
+    #     {
+    #         "id": 3,
+    #         "product_name": "hehe",
+    #         "description": "description",
+    #         "price": 10,
+    #         "categories": ["category_1", "category_2"],
+    #         "product_link": "product link",
+    #     },
+    #     {
+    #         "id": 4,
+    #         "product_name": "haha",
+    #         "description": "description",
+    #         "price": 10,
+    #         "categories": "category_1, category_3",
+    #         "product_link": "product link",
+    #     },
+    # ]
+
+    milvus.add_or_edit_records(data)
     # milvus.add_new_record(data)
-    milvus.get_record(id=0)
-    
-    # print(milvus.agent_search(query="cho tôi 2 sản phẩm về áo thun tay dài"))
-    # milvus.context_search(text="")
+    # milvus.get_record(id=0)
 
+    # print(milvus.AI_search_with_context(text="cho tôi 2 sản phẩm về áo thun tay dài"))
+
+    # user_context = ""
+    # while True:
+    #     text = input("input: ")
+    #     if text.lower() == "q": break
+
+    #     output = milvus.AI_search_with_context(
+    #         text=text, user_context=user_context
+    #     )
+
+    #     user_context = output["context"]
+
+    #     print(output)
+    # milvus.quick_search(text="")
     # milvus.is_id_exists(0)
