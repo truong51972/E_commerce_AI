@@ -2,7 +2,6 @@ import json
 
 from rest_framework import serializers
 
-from utils import milvus_database
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from utils.milvus_action import Milvus_Action

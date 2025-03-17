@@ -9,6 +9,7 @@ router.register(r'product_record', views.ProductionVectorRecordViewSet, 'product
 
 urlpatterns = [
     path('', include(router.urls)),
-    path("context_search_api", views.ContextSearchAPIView.as_view(), name="context_search_api"),
-    path("agent_search_api", views.AgentSearchAPIView.as_view(), name="agent_search_api"),
+    path("quick_search", views.QuickSearchAPIView.as_view(), name="quick_search"),
+    path("ai_search", views.AiSearchAPIView.as_view(), name="ai_search"),
+    path("ai_search_with_context", views.AiSearchWithContextAPIView.as_view(), name="ai_search_with_context"),
 ]

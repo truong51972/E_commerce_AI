@@ -4,15 +4,18 @@ from pydantic import BaseModel, field_validator, Field, model_validator
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
 
+import langchain
 from langchain import hub
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 
-import langchain
-langchain.debug = True  # Bật debug mode
+from pathlib import Path
 
+
+RELATIVE_PATH = Path(Path(__file__).resolve().parent)
+print(RELATIVE_PATH / 'prompts/ai_agent_with_context.txt')
 
 class Milvus_Action(BaseModel):
     milvus_uri: str = Field(default="http://localhost:19530",min_length=10,max_length=100,)
@@ -25,6 +28,7 @@ class Milvus_Action(BaseModel):
     auto_create_collection: bool = Field(default=True)
     @model_validator(mode="after")
     def after_init(self):
+        self.load_prompts()
         self.connect_milvus()
 
         self._embeddings = GoogleGenerativeAIEmbeddings(model=self.embedding_model)
@@ -35,6 +39,17 @@ class Milvus_Action(BaseModel):
             self.create_new_collection()
 
         return self
+
+    def load_prompts(self):
+        logging.info("Loading prompts...")
+        with open(RELATIVE_PATH / './prompts/ai_agent_with_context.txt', 'r') as f:
+            self._ai_agent_with_context_prompt = f.read()
+
+        with open(RELATIVE_PATH / './prompts/ai_agent_with_context__answer.txt', 'r') as f:
+            self._ai_agent_with_context__answer_prompt = f.read()
+
+        with open(RELATIVE_PATH / './prompts/ai_agent_with_context__context.txt', 'r') as f:
+            self._ai_agent_with_context__context_prompt = f.read()
 
     def connect_milvus(self):
         if not connections.has_connection('default'):
@@ -241,43 +256,15 @@ class Milvus_Action(BaseModel):
         )
 
         class PatternOutput(BaseModel):
-            answer: str = Field(description="Recommended product containing product name, and "
-                                            "a brief description, and product link (if available)"
-            )
-            context: str = Field(
-                description="List the keywords of <user_input> only "
-                            "and keywords have to available in <context>, if not, delete it"
-            )
+            answer: str = Field(description=self._ai_agent_with_context__answer_prompt)
+            context: str = Field(description=self._ai_agent_with_context__context_prompt)
 
         parser = PydanticOutputParser(pydantic_object=PatternOutput)
-        retrieval_qa_chat_prompt = """
-System:
-As a customer care and consultation system
-you must recommend products
-using <user_input> question with context
-based solely on the <context> below
-ensure that the output follows <expected_output> format and answering by <user_input>'s language
-
-<context>
-{context}
-</context>
-
-User:
-<user_input>
-{input}
-</user_input>
-
-Expected output:
-<expected_output>
-{format_instructions}
-</expected_output>
-"""
 
         retrieval_qa_chat_prompt = ChatPromptTemplate.from_template(
-            retrieval_qa_chat_prompt,
+            self._ai_agent_with_context_prompt,
             partial_variables={"format_instructions": parser.get_format_instructions()},
         )
-        # retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
 
         stuff_documents_chain = create_stuff_documents_chain(self._llm, retrieval_qa_chat_prompt)
 
@@ -292,19 +279,21 @@ Expected output:
         return parsed_output
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
-    from dotenv import load_dotenv
     import pandas as pd
-
+    from dotenv import load_dotenv
     load_dotenv()
+
+    langchain.debug = True
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
+
     # milvus = Milvus_Action(collection_name="clothes_gemini")
     # milvus = Milvus_Action(collection_name="default_collection_name")
     milvus = Milvus_Action(collection_name="test_05")
 
+    # df = pd.read_excel("./.data/MLB.xlsx")
 
-    df = pd.read_excel("./.data/MLB.xlsx")
-
-    data = df.to_dict(orient="records")
+    # data = df.to_dict(orient="records")
 
     # print(data[0])
 
@@ -327,7 +316,7 @@ if __name__ == "__main__":
     #     },
     # ]
 
-    milvus.add_or_edit_records(data)
+    # milvus.add_or_edit_records(data)
     # milvus.add_new_record(data)
     # milvus.get_record(id=0)
 

@@ -12,7 +12,6 @@ from drf_yasg import openapi
 from utils.milvus_action import Milvus_Action
 
 from . import serializers
-from utils import milvus_database
 
 from rest_framework.decorators import action
 
@@ -224,7 +223,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         return Response({"message": "Deleted successfully!"}, status=status.HTTP_202_ACCEPTED)
 
 
-class ContextSearchAPIView(APIView):
+class QuickSearchAPIView(APIView):
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -307,7 +306,7 @@ class ContextSearchAPIView(APIView):
             ),
         },
         tags=["Search engine"],
-        operation_id="Context Search",
+        operation_id="Quick Search",
     )
     def post(self, request):
         """Context search"""
@@ -322,7 +321,7 @@ class ContextSearchAPIView(APIView):
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = milvus.context_search(
+        result = milvus.quick_search(
             text=text,
             price_range=price_range,
             categories=categories,
@@ -332,7 +331,7 @@ class ContextSearchAPIView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
-class AgentSearchAPIView(APIView):
+class AiSearchAPIView(APIView):
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -380,7 +379,7 @@ class AgentSearchAPIView(APIView):
             ),
         },
         tags=["Search engine"],
-        operation_id="Agent Search",
+        operation_id="AI Search",
     )
     def post(self, request):
         """Agent search"""
@@ -392,8 +391,82 @@ class AgentSearchAPIView(APIView):
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = milvus.agent_search(
+        result = milvus.AI_search(
             text=text,
+        )
+
+        return Response({"text": result}, status=status.HTTP_200_OK)
+
+
+class AiSearchWithContextAPIView(APIView):
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "text": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="text",
+                    default="Text query",
+                ),
+                "context": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="context",
+                    default="context query",
+                ),
+                "collection_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="collection_name",
+                    default="default_collection_name",
+                ),
+            },
+            required=["text", "collection_name"],
+        ),
+        responses={
+            200: openapi.Response(
+                "List of product name and id",
+                openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "text": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="text",
+                            default="Text query",
+                        ),
+                    },
+                ),
+            ),
+            404: openapi.Response(
+                "Invalid Data!",
+                openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "message": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="message",
+                            default="Collection does not exist!",
+                        )
+                    },
+                ),
+            ),
+        },
+        tags=["Search engine"],
+        operation_id="AI Search with Context",
+    )
+    def post(self, request):
+        """Agent search"""
+        collection_name = request.data["collection_name"]
+        text = request.data["text"]
+        context = request.data["context"]
+
+        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+
+        if not milvus.is_collection_exists():
+            return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
+
+        result = milvus.AI_search_with_context(
+            text=text,
+            user_context=context
         )
 
         return Response({"text": result}, status=status.HTTP_200_OK)
