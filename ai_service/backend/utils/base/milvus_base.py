@@ -55,11 +55,11 @@ class MilvusBase(ABC, BaseModel):
         result = collection.query(f"id == {id}")
         return True if result else False
     
-    def create_record(self, data):
-        assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
-        assert not self.is_id_exists(data['id']), f"id= {data['id']} already exists!"
+    # def create_record(self, data):
+    #     assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
+    #     assert not self.is_id_exists(data['id']), f"id= {data['id']} already exists!"
 
-        self._add_or_edit_record(data)
+    #     self._add_or_edit_record(data)
 
     def read_record(self, id, output_fields=["id"]):
         assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
@@ -76,11 +76,11 @@ class MilvusBase(ABC, BaseModel):
 
         return result
 
-    def update_record(self, data):
-        assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
-        assert self.is_id_exists(data['id']), f"id={data['id']} does not exist!"
+    # def update_record(self, data):
+    #     assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
+    #     assert self.is_id_exists(data['id']), f"id={data['id']} does not exist!"
 
-        self._add_or_edit_record(data)
+    #     self._add_or_edit_record(data)
 
     def delete_record(self, id):
         assert self.is_id_exists(id), f"id= {id} does not exist!"

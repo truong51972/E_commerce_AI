@@ -1,3 +1,6 @@
+import uuid
+import hashlib
+
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
 from pydantic import BaseModel, field_validator, Field, model_validator
@@ -60,18 +63,27 @@ class ProductsActions(MilvusBase):
         collection.load()
 
     def add_or_edit_records(self, data: list[dict[str:str]] | dict[str:str]):
-        if isinstance(data, list): data = [data]
+        def md5_to_int64(data: str) -> int:
+            hash_bytes = hashlib.md5(data.encode()).digest()
+            int_64bit = int.from_bytes(hash_bytes[:8], 'big', signed=True)  # Dạng signed
+            return int_64bit
+        
+        if not isinstance(data, list): data = [data]
 
         collection = Collection(name=self.collection_name)
 
         texts = []
         logging.info("Loading data...")
         for record in data:
+            record["price"] = record["price"][:-1]
             text = "\n".join([
                 f"Product Name: {record['product_name']}",
-                f"Categories: {record['categories']}"
+                f"Price: {record['price']}",
+                f"Categories: {record['categories']}",
                 f"Description: {record['description']}",
             ])
+
+            record['id'] = record.get('id', md5_to_int64(text))
 
             texts.append(text)
 
@@ -128,4 +140,11 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
 
-    products_actions = ProductsActions(collection_name="test_6")
+    products_actions = ProductsActions(collection_name="test_08")
+
+    # df = pd.read_excel("./utils/.data/kenta_pant.xlsx")
+    df = pd.read_excel("./utils/.data/MLB.xlsx")
+    
+    data = df.to_dict(orient="records")
+
+    products_actions.add_or_edit_records(data)

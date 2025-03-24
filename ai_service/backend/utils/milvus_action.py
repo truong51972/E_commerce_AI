@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 RELATIVE_PATH = Path(Path(__file__).resolve().parent)
-print(RELATIVE_PATH / 'prompts/ai_agent_with_context.txt')
+print(RELATIVE_PATH / 'prompts/ai_search_with_context.txt')
 
 class Milvus_Action(BaseModel):
     milvus_uri: str = Field(default="http://localhost:19530",min_length=10,max_length=100,)
@@ -42,14 +42,14 @@ class Milvus_Action(BaseModel):
 
     def load_prompts(self):
         logging.info("Loading prompts...")
-        with open(RELATIVE_PATH / './prompts/ai_agent_with_context.txt', 'r') as f:
-            self._ai_agent_with_context_prompt = f.read()
+        with open(RELATIVE_PATH / './services/prompts/ai_search_with_context.txt', 'r') as f:
+            self._ai_search_with_context_prompt = f.read()
 
-        with open(RELATIVE_PATH / './prompts/ai_agent_with_context__answer.txt', 'r') as f:
-            self._ai_agent_with_context__answer_prompt = f.read()
+        with open(RELATIVE_PATH / './services/prompts/ai_search_with_context__answer.txt', 'r') as f:
+            self._ai_search_with_context__answer_prompt = f.read()
 
-        with open(RELATIVE_PATH / './prompts/ai_agent_with_context__context.txt', 'r') as f:
-            self._ai_agent_with_context__context_prompt = f.read()
+        with open(RELATIVE_PATH / './services/prompts/ai_search_with_context__context.txt', 'r') as f:
+            self._ai_search_with_context__context_prompt = f.read()
 
     def connect_milvus(self):
         if not connections.has_connection('default'):
@@ -256,13 +256,13 @@ class Milvus_Action(BaseModel):
         )
 
         class PatternOutput(BaseModel):
-            answer: str = Field(description=self._ai_agent_with_context__answer_prompt)
-            context: str = Field(description=self._ai_agent_with_context__context_prompt)
+            answer: str = Field(description=self._ai_search_with_context__answer_prompt)
+            context: str = Field(description=self._ai_search_with_context__context_prompt)
 
         parser = PydanticOutputParser(pydantic_object=PatternOutput)
 
         retrieval_qa_chat_prompt = ChatPromptTemplate.from_template(
-            self._ai_agent_with_context_prompt,
+            self._ai_search_with_context_prompt,
             partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 

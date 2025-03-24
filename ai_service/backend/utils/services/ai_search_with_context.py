@@ -16,13 +16,13 @@ class AiSearchWithContext(ProductsActions):
 
     @model_validator(mode="after")
     def __after_init(self):
-        with open('/utils/services/prompts/ai_search_with_context.txt', 'r') as f:
+        with open('utils/services/prompts/ai_search_with_context.txt', 'r') as f:
             self._ai_search_with_context_prompt = f.read()
 
-        with open('/utils/services/prompts/ai_search_with_context__answer.txt', 'r') as f:
+        with open('utils/services/prompts/ai_search_with_context__answer.txt', 'r') as f:
             self._ai_search_with_context__answer_prompt = f.read()
 
-        with open('/utils/services/prompts/ai_search_with_context__context.txt', 'r') as f:
+        with open('utils/services/prompts/ai_search_with_context__context.txt', 'r') as f:
             self._ai_search_with_context__context_prompt = f.read()
         return self
     
