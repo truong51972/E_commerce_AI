@@ -30,7 +30,7 @@ class MilvusBase(ABC, BaseModel):
         self.connect_milvus()
 
         self._embeddings = GoogleGenerativeAIEmbeddings(model=self.embedding_model)
-        self._llm = ChatGoogleGenerativeAI(model=self.llm_model)
+        self._llm = ChatGoogleGenerativeAI(model=self.llm_model, temperature=0.2)
 
         if not self.is_collection_exists() and self.auto_create_collection:
             logging.info(f"Creating new collection...")

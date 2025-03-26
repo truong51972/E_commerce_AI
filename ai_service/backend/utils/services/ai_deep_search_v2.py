@@ -15,13 +15,13 @@ from utils.models.products import ProductsActions
 prompt_1 = """
 System:
 As a customer care and consultation system
-you must thinking what user need using <user_input> question and <context> if available
+you must thinking what user need using <user_input> question and <history> if available
 ensure that the output follows <expected_output> format
-and your output (include your thinking) is answer by <user_input>'s language
+and your output (include your thinking) MUST answer by <user_input>'s language
 
-<context>
-{context}
-</context>
+<history>
+{history}
+</history>
 
 User:
 <user_input>
@@ -38,18 +38,22 @@ prompt_2 = """
 System:
 As a customer care and consultation system
 you must recommend products
-using <keywords> extracted by you before
+with <user_input>
 and based solely on the <context> below
 ensure that the output follows <expected_output> format
-and your output (include your thinking) is answer by <user_input>'s language
+and your output (include your thinking) MUST answer by <user_input>'s language
 
 <context>
 {context}
 </context>
 
-<keywords>
-{keywords}
-</keywords>
+<history>
+{history}
+</history>
+
+<user_input>
+{user_input}
+</user_input>
 
 Expected output:
 <expected_output>
@@ -63,10 +67,10 @@ class AiDeepSearch(ProductsActions):
     def __after_init(self):
         return self
 
-    def extract_info(self, user_input, context):
+    def extract_info(self, user_input, history):
         class PatternOutput(BaseModel):
             thinking: str = Field(description="Brief your thinking of what user's needed, as short as you can")
-            keywords: str = Field(description="A brief of <user_input> and <context> only for describing a user's needed")
+            keywords: str = Field(description="A detailed brief of <user_input> and <history> only for describing a user's needed about a product, including product name if <user_input> mentions it")
 
         parser = PydanticOutputParser(pydantic_object=PatternOutput)
 
@@ -75,7 +79,7 @@ class AiDeepSearch(ProductsActions):
             partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
-        prompt = retrieval_qa_chat_prompt.invoke(input={"user_input" : user_input, "context" : context})
+        prompt = retrieval_qa_chat_prompt.invoke(input={"user_input" : user_input, "history" : history})
         result = self._llm.invoke(prompt)
 
         parsed_output = parser.parse(result.content).model_dump()
@@ -97,7 +101,7 @@ class AiDeepSearch(ProductsActions):
 
         return result
 
-    def augment_answer(self, keywords, docs):
+    def augment_answer(self, user_input, docs, history):
         class PatternOutput(BaseModel):
             answer: str = Field(description="Recommended product containing product name, and a brief description, and product link (if available, put it in markdown which anchor text is product name")
             thinking: str = Field(description="Brief your thinking of what user's needed with a provided context")
@@ -108,19 +112,23 @@ class AiDeepSearch(ProductsActions):
             partial_variables={"format_instructions": parser.get_format_instructions()},
         )
 
-        prompt = retrieval_qa_chat_prompt.invoke(input={"keywords" : keywords, "context" : docs})
+        prompt = retrieval_qa_chat_prompt.invoke(input={"user_input" : user_input, "context" : docs, "history": history})
         result = self._llm.invoke(prompt)
 
         parsed_output = parser.parse(result.content).model_dump()
         return parsed_output
 
-    def search(self, user_input, context=""):
+    def search(self, user_input, history:list):
+        history_text = ""
 
-        extracted_info = self.extract_info(user_input, context)
+        for conversation in history:
+            history_text += f"-{conversation['role']}: {conversation['content']}\n"
+
+        extracted_info = self.extract_info(user_input, history_text)
         # print(extracted_info)
         docs = self.search_docs(extracted_info["keywords"])
 
-        augmented_answer = self.augment_answer(keywords=extracted_info["keywords"], docs=docs)
+        augmented_answer = self.augment_answer(user_input=user_input, docs=docs, history=history_text)
 
         text_docs = ""
         for doc in docs:

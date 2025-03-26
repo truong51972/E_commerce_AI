@@ -75,7 +75,7 @@ class ProductsActions(MilvusBase):
         texts = []
         logging.info("Loading data...")
         for record in data:
-            record["price"] = record["price"][:-1]
+            # record["price"] = record["price"][:-1]
             text = "\n".join([
                 f"Product Name: {record['product_name']}",
                 f"Price: {record['price']}",
@@ -116,7 +116,7 @@ class ProductsActions(MilvusBase):
             "categories",
             "product_link",
         ]
-        self.read_record(id=id, output_fields=output_fields)
+        return self.read_record(id=id, output_fields=output_fields)
 
     def add_new_record(self, data):
         assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
@@ -140,10 +140,14 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
 
-    products_actions = ProductsActions(collection_name="test_08")
+    products_actions = ProductsActions(collection_name="e_commerce_ai")
 
-    # df = pd.read_excel("./utils/.data/kenta_pant.xlsx")
-    df = pd.read_excel("./utils/.data/MLB.xlsx")
+    # df = pd.read_excel("./utils/.data/MLB.xlsx")
+    # df = pd.read_excel("utils/.data/kenta_ao_khoac.xlsx")
+    # df = pd.read_excel("utils/.data/kenta_quan_short.xlsx")
+    # df = pd.read_excel("utils/.data/kenta_quan.xlsx")
+    # df = pd.read_excel("utils/.data/Dataman.xlsx")
+    df = pd.read_excel("utils/.data/5fasion_200.xlsx")
     
     data = df.to_dict(orient="records")
 

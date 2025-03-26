@@ -8,12 +8,18 @@ from rest_framework.renderers import JSONRenderer
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-
-from utils.milvus_action import Milvus_Action
-
 from . import serializers
 
 from rest_framework.decorators import action
+
+from utils.milvus_action import Milvus_Action
+
+from utils.models.products import ProductsActions
+
+from utils.services.quick_search import QuickSearch
+from utils.services.ai_search import AiSearch
+from utils.services.ai_search_with_context import AiSearchWithContext
+
 
 
 class ProductionVectorRecordViewSet(viewsets.ViewSet):
@@ -135,7 +141,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         """
         collection_name = request.query_params.get("collection_name")
 
-        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+        milvus = ProductsActions(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
@@ -210,7 +216,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         """
         collection_name = request.query_params.get("collection_name")
 
-        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+        milvus = ProductsActions(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
@@ -316,12 +322,12 @@ class QuickSearchAPIView(APIView):
         categories = request.data["categories"]
         k = request.data["k"]
 
-        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+        milvus = QuickSearch(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = milvus.quick_search(
+        result = milvus.search(
             text=text,
             price_range=price_range,
             categories=categories,
@@ -386,12 +392,12 @@ class AiSearchAPIView(APIView):
         collection_name = request.data["collection_name"]
         text = request.data["text"]
 
-        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+        milvus = AiSearch(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = milvus.AI_search(
+        result = milvus.search(
             text=text,
         )
 
@@ -459,14 +465,14 @@ class AiSearchWithContextAPIView(APIView):
         text = request.data["text"]
         context = request.data["context"]
 
-        milvus = Milvus_Action(collection_name=collection_name, auto_create_collection=False)
+        milvus = AiSearchWithContext(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = milvus.AI_search_with_context(
+        result = milvus.search(
             text=text,
-            user_context=context
+            context=context
         )
 
         return Response({"text": result}, status=status.HTTP_200_OK)

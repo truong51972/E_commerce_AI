@@ -26,7 +26,7 @@ class AiSearchWithContext(ProductsActions):
             self._ai_search_with_context__context_prompt = f.read()
         return self
     
-    def search(self, text, user_context=""):
+    def search(self, text, context=""):
         milvus = Milvus(
             embedding_function=self._embeddings,
             collection_name=self.collection_name,
@@ -51,7 +51,9 @@ class AiSearchWithContext(ProductsActions):
             combine_docs_chain=stuff_documents_chain,
         )
 
-        text_with_keyword = f"{text}; {user_context}"
+        text_with_keyword = f"{text}; {context}"
         result = qa.invoke(input={"input": text_with_keyword})
+        print(result["answer"])
         parsed_output = parser.parse(result["answer"]).model_dump()
+        print(parsed_output)
         return parsed_output

@@ -4,21 +4,11 @@ from rest_framework import serializers
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-from utils.milvus_action import Milvus_Action
+# from utils.milvus_action import Milvus_Action
+from utils.models.products import ProductsActions
 
 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
-
-# data = {
-    #     "id" : 1,
-    #     "product_name" : "hehe",
-    #     "description" : "description",
-    #     "price" : 10,
-    #     "categories" : ["category_1", "category_2"],
-    #     "product_link" : "product link"
-    # }
-
-
 
 class ProductionVectorRecordSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -33,7 +23,7 @@ class ProductionVectorRecordSerializer(serializers.Serializer):
     collection_name = serializers.CharField(default="default_collection_name")
 
     # def is_id_exists(self):
-    #     milvus = Milvus_Action(collection_name=)
+    #     milvus = ProductsActions(collection_name=)
 
 
     def create(self, validated_data:dict):
@@ -43,7 +33,7 @@ class ProductionVectorRecordSerializer(serializers.Serializer):
         data = validated_data
         collection_name = data.pop("collection_name")
 
-        milvus = Milvus_Action(collection_name=collection_name)
+        milvus = ProductsActions(collection_name=collection_name)
 
         if milvus.is_id_exists(id=data['id']):
             raise serializers.ValidationError("Id already exists!")
@@ -57,7 +47,7 @@ class ProductionVectorRecordSerializer(serializers.Serializer):
         """
         data = validated_data
         collection_name = data.pop("collection_name")
-        milvus = Milvus_Action(collection_name=collection_name)
+        milvus = ProductsActions(collection_name=collection_name)
 
         if not milvus.is_id_exists(id=data['id']):
             raise serializers.ValidationError("Id dose not exist!")
