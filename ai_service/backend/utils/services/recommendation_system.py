@@ -41,33 +41,7 @@ class RecommendationSystem(ProductsActions):
             print("TopK results:")
             for hit in hits:
                 print(hit)
-        # collection.g
-        # assert price_range[0] <= price_range[1], f"Invalid Price Range!"
 
-        # milvus = Milvus(
-        #     embedding_function=self._embeddings,
-        #     collection_name=self.collection_name,
-        #     connection_args={"uri": self.milvus_uri, "token": self.milvus_token},
-        # )
-
-        # expr = f"""
-        #             (price >= {price_range[0]} and price <= {price_range[1]})
-        #             AND
-        #             ARRAY_CONTAINS_ALL(categories, {categories})
-        #         """
-
-        # result = milvus.similarity_search(
-        #     query=text,
-        #     k=k,
-        #     expr=expr,
-        # )
-
-        # result = [
-        #     {"id": doc.metadata["id"], "product_name": doc.metadata["product_name"]}
-        #     for doc in result
-        # ]
-
-        # return result
 
 if __name__ == "__main__":
     import pandas as pd
