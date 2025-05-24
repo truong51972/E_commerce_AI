@@ -1,6 +1,5 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
-from pydantic import BaseModel, field_validator, Field, model_validator
 from pymilvus import MilvusClient, connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
 
@@ -13,34 +12,57 @@ from langchain.output_parsers import PydanticOutputParser
 from utils.models.products import ProductsActions
 import json
 
+# for validation
+import pydantic
+from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
+from typing import List, Optional
 
 class RecommendationSystem(ProductsActions):
 
-    def search(self, ids: list[int]):
+    @validate_call
+    def search(
+        self,
+        ids: List[int] = Field(..., min_length=1, max_length=20, description="List of product ids to search for similar products."),
+        output_num: int = Field(5, gt=0, description="Number of similar products to return. Defaults to 5 and must be greater than 0.")
+    ) -> List[int] | None:
+        """
+        Search for products similar to the given ids.
+        Args:
+            ids (list[int]): List of product ids to search for similar products.
+            output_num (int): Number of similar products to return. Defaults to 5.
+        Returns:
+            list[int]: List of product ids of similar products.
+        """
+        # Validate input
+
         collection = Collection(name=self.collection_name)
 
-        result = collection.query(expr=f"id IN {ids}", output_fields=["id", "vector"])
-
-        print(len(result[0]["vector"]))
+        query_results = collection.query(expr=f"id IN {ids}", output_fields=["id", "vector"])
 
         search_params = {
             "metric_type": "COSINE",
-            "params": {"ef": 10},
+            "params": {
+                "ef": 64,
+                "radius": 0.90 # only take results with cosine similarity > radius
+            },
         }
 
-        res = collection.search(
-            data=[result[0]["vector"]],
+        search_results = collection.search(
+            data=[res["vector"] for res in query_results],
             anns_field="vector",
             param=search_params,
-            limit=3,
+            limit=output_num+1,  # +1 to get the top K results
             output_fields=["id"],
             expr=f"id NOT IN {ids}"
         )
 
-        for hits in res:
-            print("TopK results:")
-            for hit in hits:
-                print(hit)
+        # combine results from multiple queries
+        search_results = [hit for hits in search_results for hit in hits]
+
+        # sort results by score (cosine similarity)
+        search_results = sorted(search_results, key=lambda x: x.distance, reverse=True)
+
+        return [res.id for res in search_results[:output_num]]
 
 
 if __name__ == "__main__":
@@ -52,6 +74,8 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
 
-    rs = RecommendationSystem()
+    rs = RecommendationSystem(collection_name="e_commerce_ai")
 
-    rs.search(ids=[0, 1, 2, 3])
+    res = rs.search(ids=[-6554713162909277892, -3354522976921633338, -1530099612076136296])
+
+    print("Search results:", res)
