@@ -1,6 +1,5 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
-from pydantic import BaseModel, field_validator, Field, model_validator
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
 
@@ -12,8 +11,16 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from utils.models.products import ProductsActions
 
+# for validation
+import pydantic
+from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
+from typing import List, Optional, Union
+
+
 class AiSearch(ProductsActions):
-    def search(self, text):
+
+    @validate_call
+    def search(self, text: str) -> str:
         milvus = Milvus(
             embedding_function=self._embeddings,
             collection_name=self.collection_name,

@@ -12,14 +12,21 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from utils.models.products import ProductsActions
 
+# for validation
+import pydantic
+from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
+from typing import List, Optional, Union
+
+
 class QuickSearch(ProductsActions):
+    @validate_call
     def search(
         self,
-        text,
+        text: str,
         price_range: list[float] = [0, 1e9],
         categories: list[str] = ["category_1", "category_2"],
         k: int = 5,
-    ):
+    ) -> List[str]:
         assert price_range[0] <= price_range[1], f"Invalid Price Range!"
 
         milvus = Milvus(
