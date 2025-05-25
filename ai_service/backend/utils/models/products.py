@@ -3,7 +3,6 @@ import hashlib
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
-from pydantic import BaseModel, field_validator, Field, model_validator
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
 
@@ -18,10 +17,15 @@ from pathlib import Path
 
 from utils.base.milvus_base import MilvusBase
 
-def create_unique_id(text: str) -> int:
+# for validation
+import pydantic
+from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
+from typing import List, Optional, Union
+
+
+@validate_call
+def create_unique_id(text: str = Field(min_length=1)) -> int:
     '''Create a unique id with text as a seed'''
-    assert isinstance(text, str), "text must be a string"
-    assert len(text) > 0, "text must not be empty"
     # assert len(text) < 1000, "text must not be too long"
 
     # create a unique id for the product
@@ -118,7 +122,8 @@ class ProductsActions(MilvusBase):
     def create_collection(self):
         '''Create collection in Milvus'''
         # Check if collection exists
-        assert not self.is_collection_exists(), f"'{self.collection_name}' exists!"
+        if self.is_collection_exists():
+            raise ValueError(f"Collection '{self.collection_name}' already exists!")
 
         # get embedding dimension
         embedding_dim = len(self._embeddings.embed_documents([""])[0])
@@ -159,17 +164,16 @@ class ProductsActions(MilvusBase):
 
         collection.load()
 
-    def add_or_edit_records(self, data: list[dict[str:str]] | dict[str:str]):
+    @validate_call
+    def add_or_edit_records(self, data: Union[list[dict[str, str]], dict[str, str]]):
         '''Add or edit records in Milvus'''
-        assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
-        assert isinstance(data, (list, dict)), "data must be a list or a dict"
-        assert all(isinstance(record, dict) for record in data), "data must be a list of dicts"
+
+        if not self.is_collection_exists():
+            raise ValueError(f"Collection '{self.collection_name}' does not exist! Please create it first.")
 
         # convert to list if data is a dict
         if not isinstance(data, list): data = [data]    
 
-        # Check if collection exists
-        assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
         collection = Collection(name=self.collection_name)
 
         validated_records = []
@@ -195,7 +199,8 @@ class ProductsActions(MilvusBase):
         collection.load()
         logging.info("Done!")
 
-    def get_record(self, id):
+    @validate_call
+    def get_record(self, id : int) -> dict[str, str] | None:
         output_fields = [
             "id",
             "product_name",
@@ -206,13 +211,15 @@ class ProductsActions(MilvusBase):
         ]
         return self.read_record(id=id, output_fields=output_fields)
 
-    def add_new_record(self, data):
+    @validate_call
+    def add_new_record(self, data: dict[str, str]):
         assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
         assert not self.is_id_exists(data['id']), f"id= {data['id']} already exists!"
 
         self.add_or_edit_records(data)
 
-    def edit_record(self, data):
+    @validate_call
+    def edit_record(self, data: dict[str, str]):
         assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
         assert self.is_id_exists(data['id']), f"id={data['id']} does not exist!"
 

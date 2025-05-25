@@ -1,6 +1,5 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
-from pydantic import BaseModel, field_validator, Field, model_validator
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
 
@@ -14,6 +13,10 @@ from langchain.output_parsers import PydanticOutputParser
 from pathlib import Path
 from abc import ABC, abstractmethod
 
+# for validation
+import pydantic
+from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
+from typing import List, Optional, Union
 
 class MilvusBase(ABC, BaseModel):
     milvus_uri: str = Field(default="http://localhost:19530",min_length=10,max_length=100,)
@@ -50,7 +53,8 @@ class MilvusBase(ABC, BaseModel):
     def is_collection_exists(self):
         return utility.has_collection(self.collection_name)
 
-    def is_id_exists(self, id):
+    @validate_call
+    def is_id_exists(self, id:int) -> bool:
         collection = Collection(name=self.collection_name)
         result = collection.query(f"id == {id}")
         return True if result else False
@@ -61,7 +65,8 @@ class MilvusBase(ABC, BaseModel):
 
     #     self._add_or_edit_record(data)
 
-    def read_record(self, id, output_fields=["id"]):
+    @validate_call
+    def read_record(self, id : int, output_fields : List[str] = ["id"]):
         assert self.is_collection_exists(), f"'{self.collection_name}' does not exist!"
         assert self.is_id_exists(id), f"id= {id} does not exist!"
 
@@ -82,8 +87,16 @@ class MilvusBase(ABC, BaseModel):
 
     #     self._add_or_edit_record(data)
 
-    def delete_record(self, id):
-        assert self.is_id_exists(id), f"id= {id} does not exist!"
+    def delete_record(self, id : int) -> int:
+        """delete_record by id
+
+        Args:
+            id (int): record id to delete
+
+        Returns:
+            int: total number of deleted records
+        """
+        if not self.is_id_exists(id): raise ValueError(f"id= {id} does not exist!")
         collection = Collection(name=self.collection_name)
 
-        collection.delete(expr=f"id == {id}")
+        return collection.delete(expr=f"id == {id}")
