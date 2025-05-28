@@ -1,1 +1,0 @@
-List the keywords of <user_input> only and keywords have to available in <context>, if not, delete it

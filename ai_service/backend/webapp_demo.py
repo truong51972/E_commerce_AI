@@ -1,12 +1,13 @@
 import streamlit as st
-from utils.services.ai_search_with_context import AiSearchWithContext
+# from utils.services.ai_search_with_context import AiSearchWithContext
 # from utils.services.ai_deep_search import AiDeepSearch
-from utils.services.ai_deep_search_v2 import AiDeepSearch
+# from utils.services.ai_deep_search_v2 import AiDeepSearch
+from core.rag.services.product.chatbot_deep_search_v2 import ChatbotDeepSearch
 from dotenv import load_dotenv
 import langchain
 
 load_dotenv()
-milvus = AiDeepSearch(collection_name="e_commerce_ai")
+milvus = ChatbotDeepSearch(collection_name="e_commerce_ai")
 st.title("💬 Chatbot")
 
 if "messages" not in st.session_state:

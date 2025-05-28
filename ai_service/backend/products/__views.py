@@ -8,17 +8,17 @@ from rest_framework.renderers import JSONRenderer
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from . import serializers
+from . import __serializers
 
 from rest_framework.decorators import action
 
-from utils.milvus_action import Milvus_Action
+from core.rag.milvus_action import Milvus_Action
 
-from utils.models.products import ProductsActions
+from core.rag.models.product import Products
 
-from utils.services.quick_search import QuickSearch
-from utils.services.ai_search import AiSearch
-from utils.services.ai_search_with_context import AiSearchWithContext
+from core.rag.services.quick_search import QuickSearch
+from core.rag.services.ai_search import AiSearch
+from core.rag.services.ai_search_with_context import AiSearchWithContext
 
 
 
@@ -27,10 +27,10 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
     docs 1
     """
     @swagger_auto_schema(
-        request_body=serializers.ProductionVectorRecordSerializer,
+        request_body=__serializers.ProductionVectorRecordSerializer,
         responses={
             201: openapi.Response(
-                "Record is created!", serializers.ProductionVectorRecordSerializer, None
+                "Record is created!", __serializers.ProductionVectorRecordSerializer, None
             ),
             400: openapi.Response(
                 "Invalid Data",
@@ -55,7 +55,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         """
         data = request.data
 
-        serializer = serializers.ProductionVectorRecordSerializer(data=data)
+        serializer = __serializers.ProductionVectorRecordSerializer(data=data)
         if not serializer.is_valid():
             return Response({"message": "Invalid Data!", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -63,10 +63,10 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
-        request_body=serializers.ProductionVectorRecordSerializer,
+        request_body=__serializers.ProductionVectorRecordSerializer,
         responses={
             202: openapi.Response(
-                "Record is updated!", serializers.ProductionVectorRecordSerializer, None
+                "Record is updated!", __serializers.ProductionVectorRecordSerializer, None
             ),
             400: openapi.Response(
                 "Invalid Data",
@@ -97,7 +97,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         milvus = Milvus_Action(collection_name=collection_name)
         record = milvus.get_record(id=id)
 
-        serializer = serializers.ProductionVectorRecordSerializer(record, data=data)
+        serializer = __serializers.ProductionVectorRecordSerializer(record, data=data)
         if not serializer.is_valid():
             return Response({"message": "Invalid Data!", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
@@ -116,7 +116,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         ],
         responses={
             200: openapi.Response(
-                "Okie!", serializers.ProductionVectorRecordSerializer, None
+                "Okie!", __serializers.ProductionVectorRecordSerializer, None
             ),
             404: openapi.Response(
                 "Invalid data",
@@ -141,7 +141,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         """
         collection_name = request.query_params.get("collection_name")
 
-        milvus = ProductsActions(collection_name=collection_name, auto_create_collection=False)
+        milvus = Products(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
@@ -150,7 +150,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
             return Response({"message": "ID not found"}, status=status.HTTP_404_NOT_FOUND)
 
         record = milvus.get_record(id=pk)
-        serializer = serializers.ProductionVectorRecordSerializer(record)
+        serializer = __serializers.ProductionVectorRecordSerializer(record)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -216,7 +216,7 @@ class ProductionVectorRecordViewSet(viewsets.ViewSet):
         """
         collection_name = request.query_params.get("collection_name")
 
-        milvus = ProductsActions(collection_name=collection_name, auto_create_collection=False)
+        milvus = Products(collection_name=collection_name, auto_create_collection=False)
 
         if not milvus.is_collection_exists():
             return Response({"message": "Collection does not exist!"}, status=status.HTTP_404_NOT_FOUND)
