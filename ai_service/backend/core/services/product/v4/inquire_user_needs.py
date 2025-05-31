@@ -1,14 +1,14 @@
-# core.services.product.chatbot_deep_search_v3.inquire_user_needs 
+# core.services.product.chatbot_deep_search_v3.inquire_user_needs
 from typing import List, Optional
+
+from dotenv import load_dotenv
 from langchain.tools import tool
+from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
 from core.base.base_ai_agent import BaseAiAgent
-from langchain_core.messages import BaseMessage
 
-from dotenv import load_dotenv
-load_dotenv() 
-
+load_dotenv()
 
 
 _agent_prompt = """
@@ -36,6 +36,7 @@ Mục tiêu chính của bạn là: **Xác định nhu cầu của người dùn
 # Bạn có quyền truy cập vào các công cụ sau để hỗ trợ quá trình này:
 """
 
+
 class ChatBotInquireUserNeeds(BaseAiAgent):
     """
     Trợ lý AI để thu thập nhu cầu của người dùng trong quá trình tư vấn bán hàng.
@@ -45,20 +46,22 @@ class ChatBotInquireUserNeeds(BaseAiAgent):
         tools (list): Danh sách các công cụ mà agent có thể sử dụng để hỗ trợ quá trình thu thập nhu cầu.
         agent_verbose (bool): Chế độ hiển thị chi tiết các bước hoạt động của agent.
     """
+
     prompt: str = _agent_prompt
-    tools: list = [
-        
-    ]
+    tools: list = []
     agent_verbose: bool = True
 
-    def run(self, user_input: str, chat_history: Optional[List[BaseMessage]] = None) -> str:
+    def run(
+        self, user_input: str, chat_history: Optional[List[BaseMessage]] = None
+    ) -> str:
         print("Đang chạy agent thu thập nhu cầu của người dùng...")
         return super().run(user_input, chat_history)
-    
+
+
 if __name__ == "__main__":
     # Tải biến môi trường từ file .env
     # from dotenv import load_dotenv
-    # load_dotenv() 
+    # load_dotenv()
 
     chatbot = ChatBotInquireUserNeeds()
     chat_history = []

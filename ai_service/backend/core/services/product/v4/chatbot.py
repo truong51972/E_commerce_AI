@@ -1,23 +1,25 @@
 # core.services.product.chatbot_deep_search_v3.chatbot
+from typing import List, Optional
+
+from dotenv import load_dotenv
 from langchain.tools import tool
+from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
 from core.base.base_ai_agent import BaseAiAgent
 from core.models.product.product_model import ProductModel
 from core.schemas.product.product_schema import ProductSchema
-from core.services.product.search_advanced import SearchAdvanced
+from core.services.product.common.tools.search_advanced import SearchAdvanced
+
 from .inquire_user_needs import ChatBotInquireUserNeeds
 
-from langchain_core.messages import BaseMessage
-from typing import List, Optional
+load_dotenv()
 
-from dotenv import load_dotenv
-load_dotenv() 
 
 chat_history = []
-
-
 chatBotInquireUserNeeds = ChatBotInquireUserNeeds()
+
+
 @tool
 def self_intro(user_input: str) -> str:
     """
@@ -30,21 +32,25 @@ def self_intro(user_input: str) -> str:
     """
     return f"Chào bạn! Tôi là trợ lý AI của bạn, chuyên tư vấn bán hàng. Tôi ở đây để giúp bạn tìm kiếm sản phẩm phù hợp với nhu cầu của mình."
 
+
 @tool
 def inquire_user_needs(user_input: str) -> str:
     """
-        Công cụ này đại diện cho **tác nhân con chuyên trách giai đoạn Thu thập nhu cầu của khách hàng**.
-        Hãy sử dụng công cụ này **NGAY LẬP TỨC** và **luôn ưu tiên** khi người dùng:
-        Đây là công cụ khởi đầu để khai thác thông tin từ người dùng khi họ chưa rõ ý định.
+    Công cụ này đại diện cho **tác nhân con chuyên trách giai đoạn Thu thập nhu cầu của khách hàng**.
+    Hãy sử dụng công cụ này **NGAY LẬP TỨC** và **luôn ưu tiên** khi người dùng:
+    Đây là công cụ khởi đầu để khai thác thông tin từ người dùng khi họ chưa rõ ý định.
 
-        Args:
-            user_input (str): Đầu vào từ khách hàng, có thể là câu hỏi hoặc yêu cầu liên quan đến sản phẩm.
-        Returns:
-            str: Một câu hỏi hoặc yêu cầu để tìm hiểu thông tin về nhu cầu của khách hàng.
-        """
+    Args:
+        user_input (str): Đầu vào từ khách hàng, có thể là câu hỏi hoặc yêu cầu liên quan đến sản phẩm.
+    Returns:
+        str: Một câu hỏi hoặc yêu cầu để tìm hiểu thông tin về nhu cầu của khách hàng.
+    """
     return chatBotInquireUserNeeds.run(user_input, chat_history)
 
+
 product_model = ProductModel(collection_name="e_commerce_ai")
+
+
 @tool
 def get_product_detail(product_ids: List[int]) -> List[ProductSchema]:
     """
@@ -59,6 +65,8 @@ def get_product_detail(product_ids: List[int]) -> List[ProductSchema]:
 
 
 searchAdvanced = SearchAdvanced(collection_name="e_commerce_ai")
+
+
 @tool
 def find_fit_product(
     text: str,
@@ -110,6 +118,7 @@ def make_order(
     print("Đang xử lý đơn hàng...")
     return f"Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn để xác nhận thông tin giao hàng."
 
+
 _agent_prompt = """
 Bạn là một trợ lý AI thân thiện, chuyên nghiệp, được thiết kế dành riêng cho việc tư vấn bán hàng.
 Bạn chỉ được phép hỏi từ 3 đến 5 câu hỏi để thu thập thông tin cần thiết từ người dùng, nhằm xác định nhu cầu và mong muốn của họ một cách chính xác nhất.
@@ -138,6 +147,7 @@ Bạn sẽ không tự mình xử lý đơn hàng, mà chỉ gửi thông tin đ
 # Bạn có quyền truy cập vào các công cụ sau để hỗ trợ quá trình này:
 """
 
+
 class ChatBot(BaseAiAgent):
     prompt: str = _agent_prompt
     tools: list = [
@@ -153,10 +163,9 @@ class ChatBot(BaseAiAgent):
 if __name__ == "__main__":
     # Tải biến môi trường từ file .env
     # from dotenv import load_dotenv
-    # load_dotenv() 
+    # load_dotenv()
 
     chatbot = ChatBot()
-
 
     list_conversation = [
         "xin chào",

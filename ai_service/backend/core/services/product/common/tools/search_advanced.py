@@ -1,25 +1,30 @@
 # core.services.product.search_advanced
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_milvus import Milvus
-from pydantic import BaseModel, field_validator, Field, model_validator
-from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 import logging
+from typing import List, Optional, Union
 
 import langchain
-from langchain import hub
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
 
 # for validation
 import pydantic
-from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
-from typing import List, Optional, Union
-
 from core.base.base_embedding import BaseEmbedding
 from core.base.base_milvus import BaseMilvus
 from core.models.product.product_model import ProductModel
+from langchain import hub
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_milvus import Milvus
+from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
+from pymilvus import (
+    Collection,
+    CollectionSchema,
+    DataType,
+    FieldSchema,
+    connections,
+    utility,
+)
 
 
 class SearchAdvanced(BaseMilvus, BaseEmbedding):
@@ -60,13 +65,17 @@ class SearchAdvanced(BaseMilvus, BaseEmbedding):
         # ]
 
         return result
-    
+
 
 if __name__ == "__main__":
     # Tải biến môi trường từ file .env
     from dotenv import load_dotenv
+
     load_dotenv()
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s",
+    )
 
     # Khởi tạo đối tượng SearchAdvanced
     search_advanced = SearchAdvanced(
@@ -75,10 +84,7 @@ if __name__ == "__main__":
 
     # Thực hiện tìm kiếm
     results = search_advanced.search(
-        text="áo",
-        price_range=[0, 3000000],
-        categories=["áo"],
-        k=5
+        text="áo", price_range=[0, 3000000], categories=["áo"], k=5
     )
 
     print(results)  # In kết quả tìm kiếm

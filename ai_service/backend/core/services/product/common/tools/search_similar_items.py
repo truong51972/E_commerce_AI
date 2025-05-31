@@ -17,7 +17,7 @@ import pydantic
 from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
 from typing import List, Optional
 
-class RecommendationSystem(Product):
+class SearchSimilarItems(Product):
 
     @validate_call
     def search(
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
 
-    rs = RecommendationSystem(collection_name="e_commerce_ai")
+    rs = SearchSimilarItems(collection_name="e_commerce_ai")
     products = Product(collection_name="e_commerce_ai")
     res = rs.search(ids=[-6554713162909277892, -3354522976921633338, -1530099612076136296])
 

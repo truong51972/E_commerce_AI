@@ -1,45 +1,59 @@
 # core.models.product.product_model
 import logging
+from typing import List, Optional, Union
+
 import langchain
-
-from core.base.base_milvus import BaseMilvus
-from core.base.base_llm import BaseLLM
-from core.base.base_embedding import BaseEmbedding
-
-from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 
 # for validation
 import pydantic
-from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
-from typing import List, Optional, Union
+from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
+from pymilvus import (
+    Collection,
+    CollectionSchema,
+    DataType,
+    FieldSchema,
+    connections,
+    utility,
+)
 
-from core.utils.generate_milvus_field_schemas_from_pydantic import generate_milvus_field_schemas_from_pydantic
+from core.base.base_embedding import BaseEmbedding
+from core.base.base_llm import BaseLLM
+from core.base.base_milvus import BaseMilvus
+from core.common.generate_milvus_field_schemas_from_pydantic import (
+    generate_milvus_field_schemas_from_pydantic,
+)
 from core.schemas.product.product_schema import ProductSchema
+
 
 class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
 
     @model_validator(mode="after")
     def __after_init(self):
 
-        if (not self.is_collection_exists()):
-            logging.info(f"Collection '{self.collection_name}' does not exist. Creating a new collection...")
+        if not self.is_collection_exists():
+            logging.info(
+                f"Collection '{self.collection_name}' does not exist. Creating a new collection..."
+            )
 
             fields = generate_milvus_field_schemas_from_pydantic(
-                pydantic_model=ProductSchema,
-                embedding_dim=self._embedding_dim
+                pydantic_model=ProductSchema, embedding_dim=self._embedding_dim
             )
 
             # create collection with schema
-            schema = CollectionSchema(fields, description="Product collection with scalar fields")
+            schema = CollectionSchema(
+                fields, description="Product collection with scalar fields"
+            )
             self._collection = Collection(name=self.collection_name, schema=schema)
 
             # Create index for searching
             index_params = {
                 "metric_type": "COSINE",
                 "index_type": "HNSW",
-                "params": {"M": 8, "efConstruction": 64}
+                "params": {"M": 8, "efConstruction": 64},
             }
-            self._collection.create_index(field_name="vector", index_params=index_params)
+            self._collection.create_index(
+                field_name="vector", index_params=index_params
+            )
 
             self._collection.load()
 
@@ -71,8 +85,8 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
     def create_records(self, data: List[ProductSchema]):
         """Add records to the collection."""
 
-        if (self.is_ids_exists([item.id for item in data])):
-            raise ValueError("Contains existing ids.")            
+        if self.is_ids_exists([item.id for item in data]):
+            raise ValueError("Contains existing ids.")
 
         # Embed data
         data = self.embed_data(data)
@@ -86,7 +100,9 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
     def update_records(self, data: List[ProductSchema]):
         """Edit existing records in the collection."""
 
-        if (not self.is_ids_exists([item.id for item in data if item.get("id", None) is not None])):
+        if not self.is_ids_exists(
+            [item.id for item in data if item.get("id", None) is not None]
+        ):
             raise ValueError("Contains non-existing ids.")
 
         # Embed data
@@ -98,10 +114,10 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
         logging.info("Records edited successfully.")
 
     @validate_call
-    def read_records(self, ids : List[int]) -> List[ProductSchema]:
+    def read_records(self, ids: List[int]) -> List[ProductSchema]:
         """Get records by ids."""
 
-        if (not self.is_ids_exists(ids)):
+        if not self.is_ids_exists(ids):
             raise ValueError("Contains non-existing ids.")
 
         results = self._collection.query(
@@ -109,13 +125,13 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
             output_fields=[
                 field.name
                 for field in self._collection.schema.fields
-                if field.name not in ["vector"] # Exclude vector field
-            ],  
+                if field.name not in ["vector"]  # Exclude vector field
+            ],
         )
         return results
 
     @validate_call
-    def delete_records(self, id : List[int]) -> int:
+    def delete_records(self, id: List[int]) -> int:
         """delete_record by id
 
         Args:
@@ -126,9 +142,11 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
         """
         return self._collection.delete(expr=f"id IN {id}")
 
+
 if __name__ == "__main__":
     import pandas as pd
     from dotenv import load_dotenv
+
     load_dotenv()
 
     langchain.debug = True
