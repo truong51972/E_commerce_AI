@@ -1,8 +1,9 @@
 import streamlit as st
+
 # from utils.services.ai_search_with_context import AiSearchWithContext
 # from utils.services.ai_deep_search import AiDeepSearch
 # from utils.services.ai_deep_search_v2 import AiDeepSearch
-from core.services.product.chatbot_deep_search_v3.chatbot import ChatBot
+from core.services.product.v4.chatbot import ChatBot
 from dotenv import load_dotenv
 import langchain
 
@@ -29,8 +30,10 @@ if user_input := st.chat_input("Nhập tin nhắn của bạn..."):
 
     with st.spinner("Đang phản hồi..."):
         # output = milvus.search(user_input=user_input, context=st.session_state.context) #v1
-        answer, chat_history = chatbot.run(user_input, st.session_state.get("chat_history", []))
-        
+        answer, chat_history = chatbot.run(
+            user_input, st.session_state.get("chat_history", [])
+        )
+
         # output = milvus.search(user_input=user_input, history=st.session_state.messages[-11:-1]) #v2
         # thinking_process_1 = output.get("thinking_1", "None")
         # keywords = output.get("keywords", "None")
@@ -58,5 +61,3 @@ if user_input := st.chat_input("Nhập tin nhắn của bạn..."):
         # """, unsafe_allow_html=True)
 
         st.markdown(answer)
-    
-
