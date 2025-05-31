@@ -12,13 +12,13 @@ from . import __serializers
 
 from rest_framework.decorators import action
 
-from core.rag.milvus_action import Milvus_Action
+from core.milvus_action import Milvus_Action
 
-from core.rag.models.product import Products
+from core.models.product import Products
 
-from core.rag.services.quick_search import QuickSearch
-from core.rag.services.ai_search import AiSearch
-from core.rag.services.ai_search_with_context import AiSearchWithContext
+from core.services.quick_search import QuickSearch
+from core.services.ai_search import AiSearch
+from core.services.ai_search_with_context import AiSearchWithContext
 
 
 

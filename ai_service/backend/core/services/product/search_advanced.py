@@ -1,3 +1,4 @@
+# core.services.product.search_advanced
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
 from pydantic import BaseModel, field_validator, Field, model_validator
@@ -10,15 +11,19 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
-from core.rag.models.product import Product
 
 # for validation
 import pydantic
 from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
 from typing import List, Optional, Union
 
+from core.base.base_embedding import BaseEmbedding
+from core.base.base_milvus import BaseMilvus
+from core.models.product.product_model import ProductModel
 
-class SearchAdvanced(Product):
+
+class SearchAdvanced(BaseMilvus, BaseEmbedding):
+
     @validate_call
     def search(
         self,
@@ -35,10 +40,12 @@ class SearchAdvanced(Product):
             connection_args={"uri": self.milvus_uri, "token": self.milvus_token},
         )
 
+        # ARRAY_CONTAINS_ALL(categories, {categories})
+
         expr = f"""
                     (price >= {price_range[0]} and price <= {price_range[1]})
-                    AND
-                    ARRAY_CONTAINS_ALL(categories, {categories})
+                    OR
+                    ARRAY_CONTAINS_ANY(categories, {categories})
                 """
 
         result = milvus.similarity_search(
@@ -47,9 +54,31 @@ class SearchAdvanced(Product):
             expr=expr,
         )
 
-        result = [
-            {"id": doc.metadata["id"], "product_name": doc.metadata["product_name"]}
-            for doc in result
-        ]
+        # result = [
+        #     {"id": doc.metadata["id"], "product_name": doc.metadata["product_name"]}
+        #     for doc in result
+        # ]
 
         return result
+    
+
+if __name__ == "__main__":
+    # Tải biến môi trường từ file .env
+    from dotenv import load_dotenv
+    load_dotenv()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s")
+
+    # Khởi tạo đối tượng SearchAdvanced
+    search_advanced = SearchAdvanced(
+        collection_name="e_commerce_ai",
+    )
+
+    # Thực hiện tìm kiếm
+    results = search_advanced.search(
+        text="áo",
+        price_range=[0, 3000000],
+        categories=["áo"],
+        k=5
+    )
+
+    print(results)  # In kết quả tìm kiếm

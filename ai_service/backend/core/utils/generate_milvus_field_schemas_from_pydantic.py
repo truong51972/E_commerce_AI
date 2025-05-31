@@ -93,7 +93,7 @@ def generate_milvus_field_schemas_from_pydantic(
 
 # --- Example Usage ---
 if __name__ == "__main__":
-    from core.rag.models.product import ProductSchema # Example path
+    from core.models.product import ProductSchema # Example path
     EMBEDDING_DIMENSION = 768 # Assume your embedding size
 
     milvus_fields = generate_milvus_field_schemas_from_pydantic(

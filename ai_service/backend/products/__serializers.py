@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-from core.rag.models.product import Product
+from core.models.product import Product
 
 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")

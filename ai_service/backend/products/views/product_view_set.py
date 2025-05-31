@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-from core.rag.models.product import ProductSchema
+from core.models.product import ProductSchema
 
 
 class ProductViewSet(viewsets.ViewSet):

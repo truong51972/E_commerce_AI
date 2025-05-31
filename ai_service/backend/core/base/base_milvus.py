@@ -1,4 +1,4 @@
-# core.rag.base.base_milvus
+# core.base.base_milvus
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_milvus import Milvus
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility

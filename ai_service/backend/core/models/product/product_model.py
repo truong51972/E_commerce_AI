@@ -1,9 +1,10 @@
-# core.rag.models.product.product_model
+# core.models.product.product_model
 import logging
 import langchain
 
-from core.rag.base.base_milvus import BaseMilvus
-from core.rag.base.base_llm import BaseLLM
+from core.base.base_milvus import BaseMilvus
+from core.base.base_llm import BaseLLM
+from core.base.base_embedding import BaseEmbedding
 
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 
@@ -12,10 +13,10 @@ import pydantic
 from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
 from typing import List, Optional, Union
 
-from core.rag.utils.generate_milvus_field_schemas_from_pydantic import generate_milvus_field_schemas_from_pydantic
-from core.rag.schemas.product.product_schema import ProductSchema
+from core.utils.generate_milvus_field_schemas_from_pydantic import generate_milvus_field_schemas_from_pydantic
+from core.schemas.product.product_schema import ProductSchema
 
-class ProductModel(BaseLLM, BaseMilvus):
+class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
 
     @model_validator(mode="after")
     def __after_init(self):
@@ -139,8 +140,8 @@ if __name__ == "__main__":
 
     products_actions = ProductModel(collection_name="e_commerce_ai")
 
-    df = pd.read_excel("core/rag/.data/MLB.xlsx")
-    # df = pd.read_excel("core/rag/.data/kenta_ao_khoac.xlsx")
+    # df = pd.read_excel("core/.data/MLB.xlsx")
+    df = pd.read_excel("core/.data/kenta_ao_khoac.xlsx")
     # df = pd.read_excel("utils/.data/kenta_quan_short.xlsx")
     # df = pd.read_excel("utils/.data/kenta_quan.xlsx")
     # df = pd.read_excel("utils/.data/Dataman.xlsx")
@@ -148,9 +149,9 @@ if __name__ == "__main__":
 
     data = df.to_dict(orient="records")
 
-    # products_actions.add_records(data)
+    products_actions.create_records(data)
 
-    got_records = products_actions.read_records([-9188129299376391335, -6305067348861834881])
-    for record in got_records:
-        print(record)
-        print()
+    # got_records = products_actions.read_records([-9188129299376391335, -6305067348861834881])
+    # for record in got_records:
+    #     print(record)
+    #     print()
