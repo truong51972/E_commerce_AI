@@ -4,7 +4,14 @@ from typing import List, Optional, Union
 
 # for validation
 import pydantic
-from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+    validate_call,
+)
 from pymilvus import DataType
 
 
@@ -25,61 +32,125 @@ class ProductSchema(BaseModel):
     id: int = Field(
         default=None,
         description="product ID, must be unique.",
-        milvus_config={"dtype": DataType.INT64, "is_primary": True, "auto_id": False},
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.INT64,
+                "is_primary": True,
+                "auto_id": False,
+            },
+        },
     )
 
     product_name: str = Field(
         min_length=3,
         max_length=512,
         description="product name",
-        milvus_config={
-            "dtype": DataType.VARCHAR,
-            "max_length": 512,  # Milvus VARCHAR max_length
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 512,  # Milvus VARCHAR max_length
+            }
         },
     )
 
     price: float = Field(
         gt=0,
         description="price of the product, must be greater than 0.",
-        milvus_config={"dtype": DataType.DOUBLE},
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.DOUBLE,
+            }
+        },
     )
 
     description: str = Field(
         min_length=10,
         description="product description, must be at least 10 characters long.",
-        milvus_config={"dtype": DataType.VARCHAR, "max_length": 16384},
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 16384,  # Milvus VARCHAR max_length
+            }
+        },
     )
 
     categories: List[str] = Field(
         default_factory=list,
         description="product categories, must be a list of strings or a comma-separated string.",
-        milvus_config={
-            "dtype": DataType.ARRAY,
-            "element_type": DataType.VARCHAR,
-            "max_length": 2048,  # Max length for elements in the array
-            "max_capacity": 50,  # Max number of elements in the array
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.ARRAY,
+                "element_type": DataType.VARCHAR,
+                "max_length": 2048,  # Max length for elements in the array
+                "max_capacity": 50,  # Max number of elements in the array
+            },
         },
     )
 
     product_link: str = Field(
         pattern=r"^https?://.*",  # Pydantic regex validation
         description="product link, must be a valid URL.",
-        milvus_config={"dtype": DataType.VARCHAR, "max_length": 2048},
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 2048,  # Milvus VARCHAR max_length
+            }
+        },
+    )
+
+    category_tier_one: Optional[str] = Field(
+        default_factory=str,
+        description="Category tier one, used for categorization.",
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 512,  # Milvus VARCHAR max_length
+            }
+        },
+    )
+
+    category_tier_two: Optional[str] = Field(
+        default_factory=str,
+        description="Category tier two, used for categorization.",
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 512,  # Milvus VARCHAR max_length
+            }
+        },
+    )
+
+    category_tier_three: Optional[str] = Field(
+        default_factory=str,
+        description="Category tier three, used for categorization.",
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 512,  # Milvus VARCHAR max_length
+            }
+        },
     )
 
     vector: Optional[List[float]] = Field(
         default_factory=list,
         description="embedding vector for the product, must be a list of floats.",
-        milvus_config={
-            "dtype": DataType.FLOAT_VECTOR
-            # 'dim' will be dynamically added from the 'embedding_dim' parameter
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.FLOAT_VECTOR
+                # 'dim' will be dynamically added from the 'embedding_dim' parameter
+            }
         },
     )
 
     text: Optional[str] = Field(
         default_factory=str,
         description="text for context, used for displaying product information.",
-        milvus_config={"dtype": DataType.VARCHAR, "max_length": 16384},
+        json_schema_extra={
+            "milvus_config": {
+                "dtype": DataType.VARCHAR,
+                "max_length": 16384,  # Milvus VARCHAR max_length
+            }
+        },
     )
 
     text_for_embedding: Optional[str] = Field(
@@ -88,8 +159,8 @@ class ProductSchema(BaseModel):
         description="embedding text, used for generating the vector.",
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": 1,
                 "product_name": "Product Name",
@@ -99,6 +170,7 @@ class ProductSchema(BaseModel):
                 "product_link": "https://example.com/product/1",
             }
         }
+    )
 
     # check price, if not float, try to convert to float
     @field_validator("price", mode="before")
