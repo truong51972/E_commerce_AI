@@ -36,7 +36,7 @@ class ProductModel(BaseLLM, BaseEmbedding, BaseMilvus):
             )
 
             fields = generate_milvus_field_schemas_from_pydantic(
-                pydantic_model=ProductSchema, embedding_dim=self._embedding_dim
+                pydantic_model=ProductSchema, embedding_dim=self.embedding_dim
             )
 
             # create collection with schema
@@ -159,11 +159,13 @@ if __name__ == "__main__":
     products_actions = ProductModel(collection_name="e_commerce_ai")
 
     # df = pd.read_excel("core/.data/MLB.xlsx")
-    df = pd.read_excel("core/.data/kenta_ao_khoac.xlsx")
+    # df = pd.read_excel("core/.data/kenta_ao_khoac.xlsx")
     # df = pd.read_excel("utils/.data/kenta_quan_short.xlsx")
     # df = pd.read_excel("utils/.data/kenta_quan.xlsx")
     # df = pd.read_excel("utils/.data/Dataman.xlsx")
     # df = pd.read_excel("utils/.data/5fasion_200.xlsx")
+    df = pd.read_excel("core/.data/full_data.xlsx")
+    df.columns = df.columns.str.lower()
 
     data = df.to_dict(orient="records")
 
