@@ -1,21 +1,25 @@
-from .base_llm import BaseLLM
-from pydantic import Field, model_validator, validate_call
 from typing import List, Optional, Union
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from pydantic import Field, model_validator, validate_call
+
+from .base_llm import BaseLLM
 
 
 class BaseAiAgent(BaseLLM):
 
     agent_prompt: str = Field(
         default="",
-        description="Prompt template for the agent. If not provided, a default prompt will be used."
+        description="Prompt template for the agent. If not provided, a default prompt will be used.",
     )
-    tools: Optional[List[object]] = Field(default_factory=list, description="List of tools that the agent can use.")
+    tools: Optional[List[object]] = Field(
+        default_factory=list, description="List of tools that the agent can use."
+    )
     agent_verbose: bool = Field(
         default=False,
-        description="Whether to enable verbose logging for the agent's actions."
+        description="Whether to enable verbose logging for the agent's actions.",
     )
 
     @model_validator(mode="after")
@@ -23,9 +27,13 @@ class BaseAiAgent(BaseLLM):
         self._prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", self.agent_prompt),
-                MessagesPlaceholder(variable_name="chat_history"), # Để duy trì lịch sử trò chuyện
-                ("human", "{input}"), # Đầu vào hiện tại của người dùng
-                MessagesPlaceholder(variable_name="agent_scratchpad"), # Langchain tự quản lý các bước trung gian
+                MessagesPlaceholder(
+                    variable_name="chat_history"
+                ),  # Để duy trì lịch sử trò chuyện
+                ("human", "{input}"),  # Đầu vào hiện tại của người dùng
+                MessagesPlaceholder(
+                    variable_name="agent_scratchpad"
+                ),  # Langchain tự quản lý các bước trung gian
             ]
         )
 
@@ -39,12 +47,14 @@ class BaseAiAgent(BaseLLM):
         self._agent_executor = AgentExecutor(
             agent=self._agent,
             tools=self.tools,
-            verbose=self.agent_verbose, # Hiển thị các bước hoạt động của agent
+            verbose=self.agent_verbose,  # Hiển thị các bước hoạt động của agent
         )
         return self
 
     @validate_call
-    def run(self, user_input: str, chat_history: Optional[List[BaseMessage]] = None) -> Union[str, List[BaseMessage]]:
+    def run(
+        self, user_input: str, chat_history: Optional[List[BaseMessage]] = None
+    ) -> Union[str, List[BaseMessage]]:
         """
         run method to process user input and maintain chat history.
         Args:
