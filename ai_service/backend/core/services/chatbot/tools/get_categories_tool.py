@@ -4,9 +4,9 @@ from typing import Optional
 from langchain.tools import tool
 from pydantic import Field, validate_call
 
-from core.services.product.common.tools.get_categories import GetCategories
+from core.services.product.get_categories_service import GetCategoriesService
 
-get_categories = GetCategories(
+get_categories = GetCategoriesService(
     collection_name="e_commerce_ai",
 )
 

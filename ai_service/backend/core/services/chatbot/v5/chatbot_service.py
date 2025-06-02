@@ -10,12 +10,12 @@ logging.basicConfig(
 )
 
 from core.base.base_ai_agent import BaseAiAgent
-from core.services.product.common.agent_tools.common import self_intro_tool
-from core.services.product.common.agent_tools.find_fit_products import (
+from core.services.chatbot.tools.common_tool import self_intro_tool
+from core.services.chatbot.tools.find_fit_products_tool import (
     find_fit_products_tool,
 )
-from core.services.product.common.agent_tools.get_categories import get_categories_tool
-from core.services.product.common.agent_tools.make_order import make_order_tool
+from core.services.chatbot.tools.get_categories_tool import get_categories_tool
+from core.services.chatbot.tools.make_order_tool import make_order_tool
 
 load_dotenv()
 
@@ -35,7 +35,7 @@ Nhiệm vụ của bạn là **chủ động giới thiệu sản phẩm** cho k
 """
 
 
-class ToolsAgent(BaseAiAgent):
+class ChatbotService(BaseAiAgent):
     agent_prompt: str = prompt
     tools: Optional[List[object]] = [
         # run_llm_agent,
@@ -49,7 +49,7 @@ class ToolsAgent(BaseAiAgent):
 
 if __name__ == "__main__":
 
-    toolsAgent = ToolsAgent()
+    toolsAgent = ChatbotService()
     chat_history = []
 
     # Example usage

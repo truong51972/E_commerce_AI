@@ -7,7 +7,7 @@ from pymilvus import Collection
 from core.base.base_milvus import BaseMilvus
 
 
-class GetCategories(BaseMilvus):
+class GetCategoriesService(BaseMilvus):
 
     # after init
     @model_validator(mode="after")
@@ -115,7 +115,7 @@ class GetCategories(BaseMilvus):
 
 if __name__ == "__main__":
 
-    get_categories_tool = GetCategories(collection_name="e_commerce_ai")
+    get_categories_tool = GetCategoriesService(collection_name="e_commerce_ai")
     categories = get_categories_tool.get_categories()
     print(categories)
     categories = get_categories_tool.get_categories(

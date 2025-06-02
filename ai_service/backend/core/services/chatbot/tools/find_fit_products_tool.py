@@ -4,11 +4,11 @@ from typing import List
 from dotenv import load_dotenv
 from langchain.tools import tool
 
-from core.services.product.common.tools.search_advanced import SearchAdvanced
+from core.services.product.search_advanced_service import SearchAdvancedService
 
 load_dotenv()
 
-searchAdvanced = SearchAdvanced(collection_name="e_commerce_ai")
+searchAdvanced = SearchAdvancedService(collection_name="e_commerce_ai")
 
 
 @tool

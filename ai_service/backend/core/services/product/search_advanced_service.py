@@ -27,7 +27,7 @@ from pymilvus import (
 )
 
 
-class SearchAdvanced(BaseMilvus, BaseEmbedding):
+class SearchAdvancedService(BaseMilvus, BaseEmbedding):
 
     @validate_call
     def search(
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     )
 
     # Khởi tạo đối tượng SearchAdvanced
-    search_advanced = SearchAdvanced(
+    search_advanced = SearchAdvancedService(
         collection_name="e_commerce_ai",
     )
 
