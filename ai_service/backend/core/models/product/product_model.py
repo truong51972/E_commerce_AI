@@ -1,19 +1,14 @@
 # core.models.product.product_model
 import logging
-from typing import List, Optional, Union
+from typing import List
 
 import langchain
 
 # for validation
-import pydantic
-from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
+from pydantic import model_validator, validate_call
 from pymilvus import (
     Collection,
     CollectionSchema,
-    DataType,
-    FieldSchema,
-    connections,
-    utility,
 )
 
 from core.base.base_embedding import BaseEmbedding

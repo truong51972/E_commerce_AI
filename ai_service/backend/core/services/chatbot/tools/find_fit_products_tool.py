@@ -3,15 +3,23 @@ from typing import List
 
 from dotenv import load_dotenv
 from langchain.tools import tool
+from pydantic import validate_call
 
 from core.services.product.search_advanced_service import SearchAdvancedService
 
 load_dotenv()
 
-searchAdvanced = SearchAdvancedService(collection_name="e_commerce_ai")
+__searchAdvanced = None
+
+
+@validate_call
+def init_search_advanced_service(searchAdvancedService: SearchAdvancedService):
+    global __searchAdvanced
+    __searchAdvanced = searchAdvancedService
 
 
 @tool
+@validate_call
 def find_fit_products_tool(
     text: str,
     price_range: list[float] = [0, 1e9],
@@ -30,7 +38,7 @@ def find_fit_products_tool(
         List[str]: Danh sách các sản phẩm phù hợp với nhu cầu của người dùng.
     """
     logging.info("find_fit_products_tool called")
-    result = searchAdvanced.search(
+    result = __searchAdvanced.search(
         text=text,
         price_range=price_range,
         categories=categories,

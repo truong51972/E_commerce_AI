@@ -1,9 +1,7 @@
 import hashlib
-import uuid
-from typing import List, Optional, Union
+from typing import List, Optional
 
 # for validation
-import pydantic
 from pydantic import (
     BaseModel,
     ConfigDict,

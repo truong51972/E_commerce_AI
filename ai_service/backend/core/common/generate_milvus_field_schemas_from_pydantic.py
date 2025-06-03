@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional, Type
+from typing import List, Type
 
-from pydantic import BaseModel, Field
-from pymilvus import CollectionSchema, DataType, FieldSchema
+from pydantic import BaseModel
+from pymilvus import DataType, FieldSchema
 
 
 def generate_milvus_field_schemas_from_pydantic(

@@ -1,8 +1,9 @@
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.agents.output_parsers.tools import ToolAgentAction
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage
 from pydantic import Field, model_validator, validate_call
 
 from .base_llm import BaseLLM
@@ -20,6 +21,11 @@ class BaseAiAgent(BaseLLM):
     agent_verbose: bool = Field(
         default=False,
         description="Whether to enable verbose logging for the agent's actions.",
+    )
+
+    return_intermediate_steps: bool = Field(
+        default=False,
+        description="Whether to return the agent's trajectory of intermediate steps at the end in addition to the final output.",
     )
 
     @model_validator(mode="after")
@@ -47,6 +53,7 @@ class BaseAiAgent(BaseLLM):
         self._agent_executor = AgentExecutor(
             agent=self._agent,
             tools=self.tools,
+            return_intermediate_steps=self.return_intermediate_steps,
             verbose=self.agent_verbose,  # Hiển thị các bước hoạt động của agent
         )
         return self
@@ -54,7 +61,7 @@ class BaseAiAgent(BaseLLM):
     @validate_call
     def run(
         self, user_input: str, chat_history: Optional[List[BaseMessage]] = None
-    ) -> Union[str, List[BaseMessage]]:
+    ) -> list[str, list[str]]:
         """
         run method to process user input and maintain chat history.
         Args:
@@ -73,6 +80,24 @@ class BaseAiAgent(BaseLLM):
         # Update chat history with user input and agent response
         if chat_history is not None:
             chat_history.append(HumanMessage(content=user_input))
+
+            # Kiểm tra nếu có các bước trung gian và nó có tool call
+            intermediate_steps = response.get("intermediate_steps", None)
+            if intermediate_steps:
+                print(type(intermediate_steps[0][0]))
+                # Lấy bước đầu tiên (thường là tool call đầu tiên)
+                first_step_action, first_step_observation = intermediate_steps[0]
+
+                # Đảm bảo đây thực sự là một AgentAction (tức là một tool call)
+                tool_message = None
+                if isinstance(first_step_action, ToolAgentAction):
+                    tool_message = ToolMessage(
+                        content=first_step_observation,
+                        tool_call_id=first_step_action.tool_call_id,
+                    )
+
+                chat_history.append(tool_message)
+
             chat_history.append(AIMessage(content=response["output"]))
 
         return response["output"], chat_history

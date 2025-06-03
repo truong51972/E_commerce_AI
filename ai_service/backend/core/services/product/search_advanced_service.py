@@ -1,43 +1,36 @@
 # core.services.product.search_advanced
 import logging
-from typing import List, Optional, Union
+from typing import List, Optional
 
-import langchain
 
 # for validation
-import pydantic
 from core.base.base_embedding import BaseEmbedding
 from core.base.base_milvus import BaseMilvus
-from core.models.product.product_model import ProductModel
-from langchain import hub
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain.output_parsers import PydanticOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_milvus import Milvus
-from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
-from pymilvus import (
-    Collection,
-    CollectionSchema,
-    DataType,
-    FieldSchema,
-    connections,
-    utility,
-)
+from pydantic import Field, validate_call
 
 
 class SearchAdvancedService(BaseMilvus, BaseEmbedding):
-
     @validate_call
     def search(
         self,
-        text: str,
-        price_range: list[float] = [0, 1e9],
-        categories: list[str] = ["category_1", "category_2"],
-        k: int = 5,
+        description: str,
+        price_range: list[float] = Field(default=[0, 1e9], min_length=2, max_length=2),
+        tier_one_category_name: Optional[str] = Field(
+            default=None,
+            description='phân loại theo đối tượng, ví dụ như "thời trang unisex", "thời trang nam", v.v.',
+        ),
+        tier_two_category_name: Optional[str] = Field(
+            default=None,
+            description='phân loại theo loại trang phục/phụ kiện chính, ví dụ như "áo", "quần", v.v.',
+        ),
+        tier_three_category_name: Optional[str] = Field(
+            default=None,
+            description='phân loại theo loại trang phục/phụ kiện cụ thể, ví dụ như "áo thun", "quần jeans", v.v.',
+        ),
+        k: int = Field(default=5, description="the number of output", ge=1, le=10),
     ) -> List[str]:
-        assert price_range[0] <= price_range[1], f"Invalid Price Range!"
+        assert price_range[0] <= price_range[1], "Invalid Price Range!"
 
         milvus = Milvus(
             embedding_function=self._embeddings,
@@ -47,22 +40,22 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
 
         # ARRAY_CONTAINS_ALL(categories, {categories})
 
-        expr = f"""
-                    (price >= {price_range[0]} and price <= {price_range[1]})
-                    OR
-                    ARRAY_CONTAINS_ANY(categories, {categories})
-                """
+        expr = f"(price >= {price_range[0]} and price <= {price_range[1]}) "
+
+        if tier_one_category_name:
+            expr += f' AND category_tier_one == "{tier_one_category_name}" '
+
+        if tier_two_category_name:
+            expr += f' AND category_tier_two == "{tier_two_category_name}" '
+
+        if tier_three_category_name:
+            expr += f' AND category_tier_three == "{tier_three_category_name}" '
 
         result = milvus.similarity_search(
-            query=text,
+            query=description,
             k=k,
             expr=expr,
         )
-
-        # result = [
-        #     {"id": doc.metadata["id"], "product_name": doc.metadata["product_name"]}
-        #     for doc in result
-        # ]
 
         return result
 
@@ -84,7 +77,10 @@ if __name__ == "__main__":
 
     # Thực hiện tìm kiếm
     results = search_advanced.search(
-        text="áo", price_range=[0, 3000000], categories=["áo"], k=5
+        text="áo màu xanh",
+        price_range=[0, 3000000],
+        tier_one_category_name="thời trang nam",
+        k=5,
     )
 
     print(results)  # In kết quả tìm kiếm

@@ -1,9 +1,11 @@
 import logging
 
 from langchain.tools import tool
+from pydantic import validate_call
 
 
 @tool
+@validate_call
 def make_order_tool(
     product_detail: str = "Chi tiết sản phẩm",
     amount: int = 1,
@@ -24,4 +26,4 @@ def make_order_tool(
         str: Một thông báo xác nhận đơn hàng.
     """
     logging.info("make_order_tool called")
-    return f"Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn để xác nhận thông tin giao hàng."
+    return "Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn để xác nhận thông tin giao hàng."

@@ -6,9 +6,12 @@ from pydantic import Field, validate_call
 
 from core.services.product.get_categories_service import GetCategoriesService
 
-get_categories = GetCategoriesService(
-    collection_name="e_commerce_ai",
-)
+__get_categories = None
+
+
+def init_get_categories_service(getCategoriesService: GetCategoriesService):
+    global __get_categories
+    __get_categories = getCategoriesService
 
 
 @tool
@@ -48,7 +51,7 @@ def get_categories_tool(
         tier_two_category_name,
         tier_three_category_name,
     )
-    return get_categories.get_categories(
+    return __get_categories.get_categories(
         tier_one_category_name=tier_one_category_name,
         tier_two_category_name=tier_two_category_name,
     )

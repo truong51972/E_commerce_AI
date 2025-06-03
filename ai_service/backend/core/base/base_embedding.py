@@ -1,10 +1,9 @@
 import logging
-from typing import List, Optional, Union
+from typing import Optional
 
 # for validation
-import pydantic
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from pydantic import BaseModel, Field, field_validator, model_validator, validate_call
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from pydantic import BaseModel, Field, model_validator
 
 
 class BaseEmbedding(BaseModel):

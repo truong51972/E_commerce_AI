@@ -1,30 +1,9 @@
 # core.base.base_milvus
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
-from langchain_milvus import Milvus
-from pymilvus import (
-    connections,
-    FieldSchema,
-    CollectionSchema,
-    DataType,
-    Collection,
-    utility,
-)
 import logging
 
-import langchain
-from langchain import hub
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
-
-from pathlib import Path
-from abc import ABC, abstractmethod
-
 # for validation
-import pydantic
-from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
-from typing import List, Optional, Union
+from pydantic import BaseModel, Field, model_validator
+from pymilvus import connections, utility
 
 
 class BaseMilvus(BaseModel):

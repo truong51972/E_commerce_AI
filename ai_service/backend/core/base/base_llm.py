@@ -1,15 +1,10 @@
 from langchain_google_genai import (
-    GoogleGenerativeAIEmbeddings,
     ChatGoogleGenerativeAI,
-    GoogleGenerativeAI,
 )
-from langchain_milvus import Milvus
-import logging
 
 # for validation
-import pydantic
-from pydantic import BaseModel, field_validator, Field, model_validator, validate_call
-from typing import List, Optional, Union
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional
 
 
 class BaseLLM(BaseModel):

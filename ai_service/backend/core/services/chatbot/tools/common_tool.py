@@ -14,4 +14,4 @@ def self_intro_tool(user_input: str) -> str:
         str: Một lời giới thiệu ngắn gọn về vai trò và mục tiêu của bạn.
     """
     logging.info("self_intro_tool called")
-    return f"Chào bạn! Tôi là trợ lý AI của bạn, chuyên tư vấn bán hàng. Tôi ở đây để giúp bạn tìm kiếm sản phẩm phù hợp với nhu cầu của mình."
+    return "Chào bạn! Tôi là trợ lý AI của bạn, chuyên tư vấn bán hàng. Tôi ở đây để giúp bạn tìm kiếm sản phẩm phù hợp với nhu cầu của mình."
