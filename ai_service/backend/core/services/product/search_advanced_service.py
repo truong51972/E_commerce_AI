@@ -16,15 +16,15 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
         self,
         description: str,
         price_range: list[float] = Field(default=[0, 1e9], min_length=2, max_length=2),
-        tier_one_category_name: Optional[str] = Field(
+        category_tier_one_name: Optional[str] = Field(
             default=None,
             description='phân loại theo đối tượng, ví dụ như "thời trang unisex", "thời trang nam", v.v.',
         ),
-        tier_two_category_name: Optional[str] = Field(
+        category_tier_two_name: Optional[str] = Field(
             default=None,
             description='phân loại theo loại trang phục/phụ kiện chính, ví dụ như "áo", "quần", v.v.',
         ),
-        tier_three_category_name: Optional[str] = Field(
+        category_tier_three_name: Optional[str] = Field(
             default=None,
             description='phân loại theo loại trang phục/phụ kiện cụ thể, ví dụ như "áo thun", "quần jeans", v.v.',
         ),
@@ -42,14 +42,14 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
 
         expr = f"(price >= {price_range[0]} and price <= {price_range[1]}) "
 
-        if tier_one_category_name:
-            expr += f' AND category_tier_one == "{tier_one_category_name}" '
+        if category_tier_one_name:
+            expr += f' AND category_tier_one == "{category_tier_one_name}" '
 
-        if tier_two_category_name:
-            expr += f' AND category_tier_two == "{tier_two_category_name}" '
+        if category_tier_two_name:
+            expr += f' AND category_tier_two == "{category_tier_two_name}" '
 
-        if tier_three_category_name:
-            expr += f' AND category_tier_three == "{tier_three_category_name}" '
+        if category_tier_three_name:
+            expr += f' AND category_tier_three == "{category_tier_three_name}" '
 
         result = milvus.similarity_search(
             query=description,
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     results = search_advanced.search(
         text="áo màu xanh",
         price_range=[0, 3000000],
-        tier_one_category_name="thời trang nam",
+        category_tier_one_name="thời trang nam",
         k=5,
     )
 

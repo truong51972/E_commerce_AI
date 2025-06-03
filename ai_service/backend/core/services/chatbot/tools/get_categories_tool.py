@@ -31,7 +31,7 @@ def get_categories_tool(
     ),
 ) -> list[str]:
     """
-    Lấy danh sách các phân loại sản phẩm từ cơ sở dữ liệu.
+    Lấy danh sách các phân loại sản phẩm.
     Khi người dùng hỏi những câu hỏi chung chung, đã có đề cập trước đó, có liên quan đến phân loại san phẩm,
     thì **bắt buộc** sử dụng công cụ này để truy xuất
 

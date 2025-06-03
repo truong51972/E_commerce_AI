@@ -22,36 +22,9 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(funcName)s: %(message)s",
 )
 
-
-# prompt = """
-# Đóng vai trò là một chuyên tư vấn bán hàng, khách hàng đang quan tâm đến việc mua sắm sản phẩm.
-# Nhiệm vụ của bạn là **chủ động giới thiệu sản phẩm** cho khách hàng tiềm năng và **tư vấn chuyên sâu** khi khách hàng có câu hỏi.
-
-# **QUY TẮC TUYỆT ĐỐI:**
-# * **KHÔNG BAO GIỜ** sử dụng bất kỳ kiến thức cá nhân nào của bạn để trả lời.
-# * **MỌI CÂU TRẢ LỜI ĐỀU PHẢI BẮT NGUỒN TỪ CÔNG CỤ ĐƯỢC CẤP.**
-# * **TRƯỚC KHI TRẢ LỜI BẤT KỲ CÂU HỎI NÀO CỦA KHÁCH HÀNG, BẠN PHẢI SỬ DỤNG CÔNG CỤ ĐƯỢC CẤP để tìm kiếm thông tin liên quan và CHỈ SỬ DỤNG THÔNG TIN TỪ CÔNG CỤ ĐÓ.**
-
-# **CÁC BƯỚC SUY NGHĨ TRƯỚC KHI PHẢN HỒI:**
-# 1.  **[BƯỚC 1: XÁC ĐỊNH NHU CẦU CÔNG CỤ]**: Bạn cần công cụ để trả lời câu hỏi này không? (Có/Không)
-# 2.  **[BƯỚC 2: HÀNH ĐỘNG CÔNG CỤ]**: Nếu có, gọi công cụ nào và với tham số nào? (Ví dụ: `search_product_info(query="điện thoại Samsung S24")`)
-# 3.  **[BƯỚC 3: PHẢN HỒI KHÁCH HÀNG]**: Dựa trên kết quả từ công cụ, đưa ra câu trả lời cho khách hàng, tập trung vào việc giới thiệu hoặc tư vấn sản phẩm.
-# """
-
-prompt = """
-Đóng vai trò là một nhân tư vấn bán hàng, khách hàng đang quan tâm đến việc mua sắm sản phẩm.
-Nhiệm vụ của bạn là **chủ động giới thiệu sản phẩm** cho khách hàng tiềm năng và **tư vấn chuyên sâu** khi khách hàng có câu hỏi.
-
-**QUY TẮC TUYỆT ĐỐI:**
-* **KHÔNG BAO GIỜ** sử dụng bất kỳ kiến thức cá nhân nào của bạn để trả lời.
-* **MỌI CÂU TRẢ LỜI ĐỀU PHẢI BẮT NGUỒN TỪ CÔNG CỤ ĐƯỢC CẤP.**
-* **TRƯỚC KHI TRẢ LỜI BẤT KỲ CÂU HỎI NÀO CỦA KHÁCH HÀNG, BẠN PHẢI SỬ DỤNG CÔNG CỤ ĐƯỢC CẤP để tìm kiếm thông tin liên quan và CHỈ SỬ DỤNG THÔNG TIN TỪ CÔNG CỤ ĐÓ.**
-
-**CÁC BƯỚC SUY NGHĨ TRƯỚC KHI PHẢN HỒI:**
-1.  **[BƯỚC 1: XÁC ĐỊNH NHU CẦU CÔNG CỤ]**: Bạn cần công cụ để trả lời câu hỏi này không? (Có/Không)
-2.  **[BƯỚC 2: HÀNH ĐỘNG CÔNG CỤ]**: Nếu có, gọi công cụ nào và với tham số nào? (Ví dụ: `search_product_info(query="điện thoại Samsung S24")`)
-3.  **[BƯỚC 3: PHẢN HỒI KHÁCH HÀNG]**: Dựa trên kết quả từ công cụ, đưa ra câu trả lời cho khách hàng, tập trung vào việc giới thiệu hoặc tư vấn sản phẩm.
-"""
+prompt = None
+with open("core/services/chatbot/v5/prompts/chat_bot_service_prompt_v2.md", "r") as f:
+    prompt = f.read()
 
 
 class ChatbotService(BaseAiAgent):
@@ -85,19 +58,19 @@ if __name__ == "__main__":
     # Example usage
 
     list_conversation = [
-        # "bên mày bán những gì",
-        # "thời trang nam thì sao",
-        # "áo thì sao",
-        # "áo thì có loại nào",
-        # "mày đã sử dụng tools bao nhiêu lần",
+        "bên mày bán những gì",
+        "thời trang nam thì sao",
+        "áo thì có loại nào",
+        "gợi ý cho tôi vài cái áo polo",
+        "còn mẫu khác không",  # chưa giải quyết được kịch bản này
     ]
     # Giả lập lịch sử trò chuyện
     for user_input in list_conversation:
         print(f"\nBạn: {user_input}")
         # Gọi hàm run để lấy câu trả lời từ agent
-        answer, chat_history = chat_bot_service.run(user_input, chat_history)
-        for i, _chat_history in enumerate(chat_history):
-            print(i, _chat_history.text())
+        answer, chat_history = chat_bot_service.run(user_input, chat_history[-5:])
+        # for i, _chat_history in enumerate(chat_history):
+        #     print(i, _chat_history.text())
         print(f"\nTrợ lý: {answer}")
         time.sleep(2)
 
@@ -106,5 +79,5 @@ if __name__ == "__main__":
         if user_input.lower() in ["exit", "quit"]:
             break
         answer, chat_history = chat_bot_service.run(user_input, chat_history)
-        print(chat_history)
+        # print(chat_history)
         print(f"\nTrợ lý: {answer}")
