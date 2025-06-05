@@ -13,6 +13,10 @@ from core.services.chatbot.tools.get_categories_tool import (
     get_categories_tool,
     init_get_categories_service,
 )
+from core.services.chatbot.tools.search_basic_tool import (
+    init_search_basic_service,
+    search_basic_tool,
+)
 from core.services.chatbot.tools.make_order_tool import make_order_tool
 from core.services.product.get_categories_service import GetCategoriesService
 from core.services.product.search_advanced_service import SearchAdvancedService
@@ -31,7 +35,8 @@ class ChatbotService(BaseAiAgent):
     llm_model: str = "gemini-2.0-flash-lite"
     agent_prompt: str = prompt
     tools: Optional[List[object]] = [
-        search_advanced_tool,
+        # search_advanced_tool,
+        search_basic_tool,
         make_order_tool,
         get_categories_tool,
     ]
@@ -52,6 +57,7 @@ if __name__ == "__main__":
 
     init_search_advanced_service(search_advanced_service)
     init_get_categories_service(get_categories_service)
+    init_search_basic_service(search_advanced_service)
 
     chat_bot_service = ChatbotService()
     chat_history = []

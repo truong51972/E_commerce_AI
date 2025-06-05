@@ -13,19 +13,15 @@ __searchAdvanced = None
 
 
 @validate_call
-def init_search_advanced_service(searchAdvancedService: SearchAdvancedService):
+def init_search_basic_service(searchAdvancedService: SearchAdvancedService):
     global __searchAdvanced
     __searchAdvanced = searchAdvancedService
 
 
 @tool
-# @validate_call
-def search_advanced_tool(
-    description: Optional[str] = "",
+def search_basic_tool(
+    description: str,
     price_range: list[float] = [0, 1e9],
-    category_tier_one_name: Optional[str] = None,
-    category_tier_two_name: Optional[str] = None,
-    category_tier_three_name: Optional[str] = None,
     product_amount: int = 5,
     product_offset: int = 0,
     excluded_product_names: Optional[List[str]] = None,
@@ -40,11 +36,9 @@ def search_advanced_tool(
     - Hoặc sử dụng product_offset: bỏ qua N sản phẩm đầu tiên
 
     Args:
-        description (Optional[str], optional): Mô tả về sản phẩm cần tìm kiếm. Mặc định là chuỗi rỗng.
+        description (str): mô tả về sản phẩm cần tìm kiếm. Có thể là từ khóa, tên sản phẩm, đối tượng, hoặc mô tả ngắn gọn.
+            Ở dạng chuỗi, ví dụ: "áo thun nam", "quần jeans", v.v.
         price_range (list[float], optional): Khoảng giá mong muốn [min, max]. Mặc định là [0, 1e9].
-        category_tier_one_name (Optional[str], optional): Danh mục cấp 1 (ví dụ: "thời trang nam").
-        category_tier_two_name (Optional[str], optional): Danh mục cấp 2 (ví dụ: "áo").
-        category_tier_three_name (Optional[str], optional): Danh mục cấp 3 (ví dụ: "áo thun").
         product_amount (int, optional): Số lượng sản phẩm muốn tìm (1-10). Mặc định là 5.
         product_offset (int, optional): Bỏ qua N sản phẩm đầu tiên (dùng khi cùng tiêu chí tìm kiếm)
         excluded_product_names (list[str], optional):: Danh sách tên sản phẩm cần loại trừ khỏi kết quả
@@ -56,8 +50,6 @@ def search_advanced_tool(
         search_advanced_tool(
             description="áo thun",
             price_range=[0, 200000],
-            category_tier_one_name="thời trang nam",
-            category_tier_three_name="áo thun",
             product_amount=3,
             product_offset=5,
         )
@@ -68,9 +60,6 @@ def search_advanced_tool(
     result = __searchAdvanced.search(
         description=description,
         price_range=price_range,
-        category_tier_one_name=category_tier_one_name,
-        category_tier_two_name=category_tier_two_name,
-        category_tier_three_name=category_tier_three_name,
         product_amount=product_amount,
         product_offset=product_offset,
         excluded_product_names=excluded_product_names,
