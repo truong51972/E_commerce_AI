@@ -72,19 +72,6 @@ class ProductSchema(BaseModel):
         },
     )
 
-    categories: List[str] = Field(
-        default_factory=list,
-        description="product categories, must be a list of strings or a comma-separated string.",
-        json_schema_extra={
-            "milvus_config": {
-                "dtype": DataType.ARRAY,
-                "element_type": DataType.VARCHAR,
-                "max_length": 2048,  # Max length for elements in the array
-                "max_capacity": 50,  # Max number of elements in the array
-            },
-        },
-    )
-
     product_link: str = Field(
         pattern=r"^https?://.*",  # Pydantic regex validation
         description="product link, must be a valid URL.",
@@ -164,7 +151,9 @@ class ProductSchema(BaseModel):
                 "product_name": "Product Name",
                 "price": 100.0,
                 "description": "Product Description",
-                "categories": ["Category1", "Category2"],
+                "category_tier_one": "Category Tier One",
+                "category_tier_two": "Category Tier Two",
+                "category_tier_three": "Category Tier Three",
                 "product_link": "https://example.com/product/1",
             }
         }
@@ -182,17 +171,6 @@ class ProductSchema(BaseModel):
                 )
         return v
 
-    # check categories, if not list, try to convert to list
-    @field_validator("categories", mode="before")
-    def check_categories(cls, v):
-        if isinstance(v, str):
-            v = v.split(", ")
-        elif not isinstance(v, list):
-            raise ValueError(
-                "Categories must be a list or a string that can be converted to a list"
-            )
-        return v
-
     # after init, create a new text for embedding
     @model_validator(mode="after")
     def create_text_for_embedding(self):
@@ -201,7 +179,7 @@ class ProductSchema(BaseModel):
             [
                 f"Product Name: {self.product_name}",
                 f"Price: {self.price}",
-                f"Categories: {self.categories}",
+                f"Categories: {self.category_tier_one}, {self.category_tier_two}, {self.category_tier_three}",
                 f"Description: {self.description}",
             ]
         )
@@ -215,7 +193,7 @@ class ProductSchema(BaseModel):
             [
                 f"Product Name: {self.product_name}",
                 f"Price: {self.price}",
-                f"Categories: {self.categories}",
+                f"Categories: {self.category_tier_one}, {self.category_tier_two}, {self.category_tier_three}",
                 f"Description: {self.description}",
                 f"Product Link: {self.product_link}",
             ]
