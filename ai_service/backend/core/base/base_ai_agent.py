@@ -91,6 +91,9 @@ class BaseAiAgent(BaseLLM):
                         tool_message = ToolMessage(
                             content=f"Tool: {tool_name}\nInput: {tool_input}\nOutput: {step_observation}",
                             tool_call_id=step_action.tool_call_id,
+                            tool=tool_name,
+                            tool_input=tool_input,
+                            observation=step_observation,
                         )
                         chat_history.append(tool_message)
 
