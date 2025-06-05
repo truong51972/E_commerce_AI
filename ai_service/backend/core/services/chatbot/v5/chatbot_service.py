@@ -5,9 +5,9 @@ from typing import List, Optional
 from dotenv import load_dotenv
 
 from core.base.base_ai_agent import BaseAiAgent
-from core.services.chatbot.tools.find_fit_products_tool import (
-    find_fit_products_tool,
+from core.services.chatbot.tools.search_advanced_tool import (
     init_search_advanced_service,
+    search_advanced_tool,
 )
 from core.services.chatbot.tools.get_categories_tool import (
     get_categories_tool,
@@ -31,12 +31,13 @@ class ChatbotService(BaseAiAgent):
     llm_model: str = "gemini-2.0-flash-lite"
     agent_prompt: str = prompt
     tools: Optional[List[object]] = [
-        find_fit_products_tool,
+        search_advanced_tool,
         make_order_tool,
         get_categories_tool,
     ]
-    llm_temperature: float = 0.05
+    llm_temperature: float = 0.1
     agent_verbose: bool = True
+    return_intermediate_steps: bool = True
 
 
 if __name__ == "__main__":
@@ -65,12 +66,23 @@ if __name__ == "__main__":
         "còn mẫu khác không",  # chưa giải quyết được kịch bản này
     ]
     # Giả lập lịch sử trò chuyện
+    context_window_size = 10
     for user_input in list_conversation:
         print(f"\nBạn: {user_input}")
         # Gọi hàm run để lấy câu trả lời từ agent
-        answer, chat_history = chat_bot_service.run(user_input, chat_history[-5:])
-        # for i, _chat_history in enumerate(chat_history):
-        #     print(i, _chat_history.text())
+        answer, chat_history = chat_bot_service.run(
+            user_input, chat_history[-context_window_size:]
+        )
+        # show chat history
+        # for message in chat_history:
+        #     if isinstance(message, str):
+        #         print(f"Chat history: {message}")
+        #     elif isinstance(message, list):
+        #         for msg in message:
+        #             print(f"Chat history: {msg.content}")
+        #     else:
+        #         print(f"Chat history: {message.content}")
+
         print(f"\nTrợ lý: {answer}")
         time.sleep(2)
 
@@ -78,6 +90,8 @@ if __name__ == "__main__":
         user_input = input("\nBạn: ")
         if user_input.lower() in ["exit", "quit"]:
             break
-        answer, chat_history = chat_bot_service.run(user_input, chat_history)
+        answer, chat_history = chat_bot_service.run(
+            user_input, chat_history[-context_window_size:]
+        )
         # print(chat_history)
         print(f"\nTrợ lý: {answer}")

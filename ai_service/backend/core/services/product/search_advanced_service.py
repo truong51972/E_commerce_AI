@@ -2,19 +2,21 @@
 import logging
 from typing import List, Optional
 
+from langchain_milvus import Milvus
+from pydantic import Field, validate_call
 
 # for validation
 from core.base.base_embedding import BaseEmbedding
 from core.base.base_milvus import BaseMilvus
-from langchain_milvus import Milvus
-from pydantic import Field, validate_call
 
 
 class SearchAdvancedService(BaseMilvus, BaseEmbedding):
     @validate_call
     def search(
         self,
-        description: str,
+        description: Optional[str] = Field(
+            default_factory=str, description="Mô tả về sản phẩm cần tìm kiếm"
+        ),
         price_range: list[float] = Field(default=[0, 1e9], min_length=2, max_length=2),
         category_tier_one_name: Optional[str] = Field(
             default=None,
@@ -28,7 +30,17 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
             default=None,
             description='phân loại theo loại trang phục/phụ kiện cụ thể, ví dụ như "áo thun", "quần jeans", v.v.',
         ),
-        k: int = Field(default=5, description="the number of output", ge=1, le=10),
+        product_amount: int = Field(
+            default=5, description="the number of output", ge=1, le=10
+        ),
+        product_offset: int = Field(
+            default=0,
+            description="Vị trí bắt đầu lấy sản phẩm (bắt đầu từ 0)",
+        ),
+        excluded_product_names: Optional[List[str]] = Field(
+            default=None,
+            description="Danh sách các tên sản phẩm cần loại trừ khỏi kết quả tìm kiếm.",
+        ),
     ) -> List[str]:
         assert price_range[0] <= price_range[1], "Invalid Price Range!"
 
@@ -37,8 +49,6 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
             collection_name=self.collection_name,
             connection_args={"uri": self.milvus_uri, "token": self.milvus_token},
         )
-
-        # ARRAY_CONTAINS_ALL(categories, {categories})
 
         expr = f"(price >= {price_range[0]} and price <= {price_range[1]}) "
 
@@ -51,13 +61,20 @@ class SearchAdvancedService(BaseMilvus, BaseEmbedding):
         if category_tier_three_name:
             expr += f' AND category_tier_three == "{category_tier_three_name}" '
 
+        if excluded_product_names:
+            excluded_names_str = ", ".join(
+                [f'"{name}"' for name in excluded_product_names]
+            )
+            expr += f" AND product_name NOT IN [{excluded_names_str}] "
+
         result = milvus.similarity_search(
             query=description,
-            k=k,
+            k=product_amount + product_offset,  # Lấy nhiều hơn để có thể product_offset
             expr=expr,
         )
 
-        return result
+        # Trả về kết quả từ vị trí product_offset
+        return result[product_offset : product_offset + product_amount]
 
 
 if __name__ == "__main__":

@@ -84,19 +84,15 @@ class BaseAiAgent(BaseLLM):
             # Kiểm tra nếu có các bước trung gian và nó có tool call
             intermediate_steps = response.get("intermediate_steps", None)
             if intermediate_steps:
-                print(type(intermediate_steps[0][0]))
-                # Lấy bước đầu tiên (thường là tool call đầu tiên)
-                first_step_action, first_step_observation = intermediate_steps[0]
-
-                # Đảm bảo đây thực sự là một AgentAction (tức là một tool call)
-                tool_message = None
-                if isinstance(first_step_action, ToolAgentAction):
-                    tool_message = ToolMessage(
-                        content=first_step_observation,
-                        tool_call_id=first_step_action.tool_call_id,
-                    )
-
-                chat_history.append(tool_message)
+                for step_action, step_observation in intermediate_steps:
+                    if isinstance(step_action, ToolAgentAction):
+                        tool_input = step_action.tool_input  # dict các tham số
+                        tool_name = step_action.tool  # tên tool
+                        tool_message = ToolMessage(
+                            content=f"Tool: {tool_name}\nInput: {tool_input}\nOutput: {step_observation}",
+                            tool_call_id=step_action.tool_call_id,
+                        )
+                        chat_history.append(tool_message)
 
             chat_history.append(AIMessage(content=response["output"]))
 
