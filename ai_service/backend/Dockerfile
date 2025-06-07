@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.12.11-slim
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
