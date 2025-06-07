@@ -68,9 +68,15 @@ def search_advanced_tool(
     result = __searchAdvanced.search(
         description=description,
         price_range=price_range,
-        category_tier_one_name=category_tier_one_name,
-        category_tier_two_name=category_tier_two_name,
-        category_tier_three_name=category_tier_three_name,
+        category_tier_one_name=(
+            category_tier_one_name.lower() if category_tier_one_name else None
+        ),
+        category_tier_two_name=(
+            category_tier_two_name.lower() if category_tier_two_name else None
+        ),
+        category_tier_three_name=(
+            category_tier_three_name.lower() if category_tier_three_name else None
+        ),
         product_amount=product_amount,
         product_offset=product_offset,
         excluded_product_names=excluded_product_names,

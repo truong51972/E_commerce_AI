@@ -6,7 +6,7 @@ from langchain.tools import tool
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
-from core.base.base_ai_agent import BaseAiAgent
+from core.base.base_ai_agent import BaseChatbot
 from core.models.product.product_model import ProductModel
 from core.schemas.product.product_schema import ProductSchema
 from core.services.product.common.tools.search_advanced import SearchAdvanced
@@ -148,7 +148,7 @@ Bạn sẽ không tự mình xử lý đơn hàng, mà chỉ gửi thông tin đ
 """
 
 
-class ChatBot(BaseAiAgent):
+class ChatBot(BaseChatbot):
     prompt: str = _agent_prompt
     tools: list = [
         self_intro,

@@ -73,7 +73,7 @@ class ProductSchema(BaseModel):
     )
 
     product_link: str = Field(
-        pattern=r"^https?://.*",  # Pydantic regex validation
+        # pattern=r"^https?://.*",  # Pydantic regex validation
         description="product link, must be a valid URL.",
         json_schema_extra={
             "milvus_config": {

@@ -9,7 +9,7 @@ from pydantic import Field, model_validator, validate_call
 from .base_llm import BaseLLM
 
 
-class BaseAiAgent(BaseLLM):
+class BaseChatbot(BaseLLM):
 
     agent_prompt: str = Field(
         default="",

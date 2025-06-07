@@ -6,7 +6,7 @@ from langchain.tools import tool
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
-from core.base.base_ai_agent import BaseAiAgent
+from core.base.base_ai_agent import BaseChatbot
 
 load_dotenv()
 
@@ -37,7 +37,7 @@ Mục tiêu chính của bạn là: **Xác định nhu cầu của người dùn
 """
 
 
-class ChatBotInquireUserNeeds(BaseAiAgent):
+class ChatBotInquireUserNeeds(BaseChatbot):
     """
     Trợ lý AI để thu thập nhu cầu của người dùng trong quá trình tư vấn bán hàng.
     Mục tiêu chính là xác định nhu cầu của người dùng một cách chính xác và đầy đủ.

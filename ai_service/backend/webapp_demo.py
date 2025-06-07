@@ -1,5 +1,6 @@
 import json
 
+import langchain
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_core.messages import ToolMessage
@@ -14,6 +15,7 @@ from core.services.product.get_categories_service import GetCategoriesService
 from core.services.product.search_advanced_service import SearchAdvancedService
 
 load_dotenv()
+langchain.debug = True
 
 # Custom CSS for professional styling
 st.markdown(
@@ -243,7 +245,11 @@ def initialize_services():
     init_get_categories_service(get_categories_service)
     init_search_basic_service(search_advanced_service)
 
-    chatbot = ChatbotService(collection_name="e_commerce_ai")
+    chatbot = ChatbotService(
+        llm_model="gemini-2.5-flash-preview-05-20",
+        collection_name="e_commerce_ai",
+        agent_verbose=False,
+    )
 
     return chatbot
 
@@ -294,13 +300,18 @@ with st.sidebar:
 
     # Calculate statistics
     total_messages = len(st.session_state.messages)
-    tools_used_count = len(
-        [
-            m
-            for m in st.session_state.messages
-            if m.get("role") == "assistant" and "tool_info" in m
-        ]
-    )
+
+    # Count total tools used correctly
+    tools_used_count = 0
+    for m in st.session_state.messages:
+        if m.get("role") == "assistant" and "tool_info" in m:
+            tool_info = m["tool_info"]
+            if isinstance(tool_info, list):
+                # Multiple tools - count all
+                tools_used_count += len(tool_info)
+            else:
+                # Single tool - count as 1
+                tools_used_count += 1
 
     col1, col2 = st.columns(2)
     with col1:
@@ -352,24 +363,50 @@ if len(st.session_state.messages) == 0:
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         if message["role"] == "assistant" and "tool_info" in message:
-            # Create a unique expander for each tool usage
             tool_info = message["tool_info"]
-            tool_name = tool_info.get("tool_name", "Unknown Tool")
 
-            with st.expander(f"🔧 Tool Used: {tool_name}", expanded=False):
-                st.markdown(f"**Tool Name:** `{tool_name}`")
+            # Handle both single tool (backward compatibility) and multiple tools
+            if isinstance(tool_info, list):
+                # Multiple tools - group them in one expander
+                tools_count = len(tool_info)
+                with st.expander(f"🔧 Tools Used ({tools_count})", expanded=False):
+                    for idx, tool in enumerate(tool_info):
+                        tool_name = tool.get("tool_name", "Unknown Tool")
 
-                if tool_info.get("tool_input"):
-                    st.markdown("**Parameters:**")
-                    st.json(tool_info.get("tool_input", {}))
+                        # Add separator between tools (except for first tool)
+                        if idx > 0:
+                            st.markdown("---")
 
-                if tool_info.get("tool_output"):
-                    st.markdown("**Output:**")
-                    # Truncate long outputs for better display
-                    output = str(tool_info.get("tool_output", "No output available"))
-                    if len(output) > 1000:
-                        output = output[:1000] + "... (truncated)"
-                    st.code(output, language="text")
+                        st.markdown(f"### Tool {idx + 1}: {tool_name}")
+
+                        if tool.get("tool_input"):
+                            st.markdown("**Parameters:**")
+                            st.json(tool.get("tool_input", {}))
+
+                        if tool.get("tool_output"):
+                            st.markdown("**Output:**")
+                            output = str(tool.get("tool_output", "No output available"))
+                            if len(output) > 1000:
+                                output = output[:1000] + "... (truncated)"
+                            st.code(output, language="text")
+            else:
+                # Single tool (backward compatibility)
+                tool_name = tool_info.get("tool_name", "Unknown Tool")
+                with st.expander(f"🔧 Tool Used: {tool_name}", expanded=False):
+                    st.markdown(f"**Tool Name:** `{tool_name}`")
+
+                    if tool_info.get("tool_input"):
+                        st.markdown("**Parameters:**")
+                        st.json(tool_info.get("tool_input", {}))
+
+                    if tool_info.get("tool_output"):
+                        st.markdown("**Output:**")
+                        output = str(
+                            tool_info.get("tool_output", "No output available")
+                        )
+                        if len(output) > 1000:
+                            output = output[:1000] + "... (truncated)"
+                        st.code(output, language="text")
 
         st.markdown(message["content"])
 
@@ -380,7 +417,7 @@ if user_input := st.chat_input("💭 Ask me anything about products..."):
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    used_tool = {}
+    used_tools = []  # Changed from used_tool to used_tools (list)
 
     with st.spinner("🤖 AI is thinking..."):
         try:
@@ -390,19 +427,23 @@ if user_input := st.chat_input("💭 Ask me anything about products..."):
 
             st.session_state.chat_history = chat_history
 
-            # Extract tool information
-            if len(chat_history) >= 2 and isinstance(
-                (conversation := chat_history[-2]), ToolMessage
-            ):
-                used_tool["tool_name"] = conversation.tool
-                used_tool["tool_input"] = conversation.tool_input
-                used_tool["tool_output"] = conversation.observation
+            # Extract all tool information from chat history
+            for message in chat_history:
+                if isinstance(message, ToolMessage):
+                    tool_info = {
+                        "tool_name": message.tool,
+                        "tool_input": message.tool_input,
+                        "tool_output": message.observation,
+                    }
+                    # Check if this tool usage is already recorded
+                    if tool_info not in used_tools:
+                        used_tools.append(tool_info)
 
-            # Add assistant message with tool info
+            # Add assistant message with all tool info
             assistant_message = {"role": "assistant", "content": answer}
 
-            if used_tool:
-                assistant_message["tool_info"] = used_tool
+            if used_tools:
+                assistant_message["tool_info"] = used_tools  # Now it's a list
 
             st.session_state.messages.append(assistant_message)
 

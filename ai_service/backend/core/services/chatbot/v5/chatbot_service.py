@@ -2,22 +2,23 @@
 import logging
 from typing import List, Optional
 
+import langchain
 from dotenv import load_dotenv
 
-from core.base.base_ai_agent import BaseAiAgent
-from core.services.chatbot.tools.search_advanced_tool import (
-    init_search_advanced_service,
-    search_advanced_tool,
-)
+from core.base.base_chatbot import BaseChatbot
 from core.services.chatbot.tools.get_categories_tool import (
     get_categories_tool,
     init_get_categories_service,
+)
+from core.services.chatbot.tools.make_order_tool import make_order_tool
+from core.services.chatbot.tools.search_advanced_tool import (
+    init_search_advanced_service,
+    search_advanced_tool,
 )
 from core.services.chatbot.tools.search_basic_tool import (
     init_search_basic_service,
     search_basic_tool,
 )
-from core.services.chatbot.tools.make_order_tool import make_order_tool
 from core.services.product.get_categories_service import GetCategoriesService
 from core.services.product.search_advanced_service import SearchAdvancedService
 
@@ -27,12 +28,13 @@ logging.basicConfig(
 )
 
 prompt = None
-with open("core/services/chatbot/v5/prompts/chat_bot_service_prompt_v2.md", "r") as f:
+with open("core/services/chatbot/v5/prompts/chat_bot_service_prompt_v3.md", "r") as f:
     prompt = f.read()
 
 
-class ChatbotService(BaseAiAgent):
-    llm_model: str = "gemini-2.0-flash-lite"
+class ChatbotService(BaseChatbot):
+    llm_model: str = "gemini-2.5-flash-preview-05-20"
+    # llm_model: str = "gemini-2.0-flash-lite"
     agent_prompt: str = prompt
     tools: Optional[List[object]] = [
         # search_advanced_tool,
@@ -40,15 +42,16 @@ class ChatbotService(BaseAiAgent):
         make_order_tool,
         get_categories_tool,
     ]
-    llm_temperature: float = 0.1
-    agent_verbose: bool = True
-    return_intermediate_steps: bool = True
+    llm_temperature: float = 0.2
+    agent_verbose: bool = False
+    return_intermediate_steps: bool = False
 
 
 if __name__ == "__main__":
     import time
 
     load_dotenv()
+    langchain.debug = True
 
     collection_name = "e_commerce_ai"
 
@@ -65,12 +68,14 @@ if __name__ == "__main__":
     # Example usage
 
     list_conversation = [
-        "bên mày bán những gì",
-        "thời trang nam thì sao",
-        "áo thì có loại nào",
-        "gợi ý cho tôi vài cái áo polo",
-        "còn mẫu khác không",  # chưa giải quyết được kịch bản này
+        # "bên mày bán những gì",
+        # "thời trang nam thì sao",
+        # "áo thì có loại nào",
+        # "gợi ý cho tôi vài cái áo polo",
+        # "còn mẫu khác không",  # chưa giải quyết được kịch bản này
+        "tao muốn mua giày nữ"
     ]
+
     # Giả lập lịch sử trò chuyện
     context_window_size = 10
     for user_input in list_conversation:

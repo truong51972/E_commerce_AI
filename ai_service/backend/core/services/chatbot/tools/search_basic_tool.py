@@ -22,7 +22,7 @@ def init_search_basic_service(searchAdvancedService: SearchAdvancedService):
 def search_basic_tool(
     description: str,
     price_range: list[float] = [0, 1e9],
-    product_amount: int = 5,
+    product_amount: int = 1,
     product_offset: int = 0,
     excluded_product_names: Optional[List[str]] = None,
 ) -> List[str]:
@@ -39,7 +39,7 @@ def search_basic_tool(
         description (str): mô tả về sản phẩm cần tìm kiếm. Có thể là từ khóa, tên sản phẩm, đối tượng, hoặc mô tả ngắn gọn.
             Ở dạng chuỗi, ví dụ: "áo thun nam", "quần jeans", v.v.
         price_range (list[float], optional): Khoảng giá mong muốn [min, max]. Mặc định là [0, 1e9].
-        product_amount (int, optional): Số lượng sản phẩm muốn tìm (1-10). Mặc định là 5.
+        product_amount (int, optional): Số lượng sản phẩm muốn tìm (1-10). Mặc định là 1.
         product_offset (int, optional): Bỏ qua N sản phẩm đầu tiên (dùng khi cùng tiêu chí tìm kiếm)
         excluded_product_names (list[str], optional):: Danh sách tên sản phẩm cần loại trừ khỏi kết quả
     Returns:
@@ -51,7 +51,7 @@ def search_basic_tool(
             description="áo thun",
             price_range=[0, 200000],
             product_amount=3,
-            product_offset=5,
+            product_offset=1,
         )
         ```
     """
