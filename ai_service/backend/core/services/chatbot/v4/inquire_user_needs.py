@@ -6,7 +6,7 @@ from langchain.tools import tool
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
-from core.base.base_ai_agent import BaseChatbot
+from core.base.base_chatbot import BaseChatbot
 
 load_dotenv()
 

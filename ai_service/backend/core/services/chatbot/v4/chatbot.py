@@ -6,7 +6,7 @@ from langchain.tools import tool
 from langchain_core.messages import BaseMessage
 from pydantic import BaseModel, model_validator
 
-from core.base.base_ai_agent import BaseChatbot
+from core.base.base_chatbot import BaseChatbot
 from core.models.product.product_model import ProductModel
 from core.schemas.product.product_schema import ProductSchema
 from core.services.product.common.tools.search_advanced import SearchAdvanced
