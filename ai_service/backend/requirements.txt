@@ -20,11 +20,12 @@ pytest==8.3.5
 
 # Langchain
 langchain==0.3.25
-langchain-ollama==0.3.3
+# langchain-ollama==0.3.3
 langchain-community==0.3.24
 langchain-milvus==0.1.10
 langchain-google-genai==2.1.5
 
+langgraph==0.4.8
 langgraph-cli[inmem]==0.2.12
 
 unstructured==0.16.21
