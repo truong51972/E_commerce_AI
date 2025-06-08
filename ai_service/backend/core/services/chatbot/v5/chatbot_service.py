@@ -6,19 +6,10 @@ import langchain
 from dotenv import load_dotenv
 
 from core.base.base_chatbot import BaseChatbot
-from core.services.chatbot.tools.get_categories_tool import (
-    get_categories_tool,
-    init_get_categories_service,
-)
-from core.services.chatbot.tools.make_order_tool import make_order_tool
-from core.services.chatbot.tools.search_advanced_tool import (
-    init_search_advanced_service,
-    search_advanced_tool,
-)
-from core.services.chatbot.tools.search_basic_tool import (
-    init_search_basic_service,
-    search_basic_tool,
-)
+from core.services.common.tools.get_categories_tool import GetCategoriesTool
+from core.services.common.tools.make_order_tool import make_order_tool
+from core.services.common.tools.search_advanced_tool import SearchAdvancedTool
+from core.services.common.tools.search_basic_tool import SearchBasicTool
 from core.services.product.get_categories_service import GetCategoriesService
 from core.services.product.search_advanced_service import SearchAdvancedService
 
@@ -36,12 +27,6 @@ class ChatbotService(BaseChatbot):
     llm_model: str = "gemini-2.5-flash-preview-05-20"
     # llm_model: str = "gemini-2.0-flash-lite"
     agent_prompt: str = prompt
-    tools: Optional[List[object]] = [
-        # search_advanced_tool,
-        search_basic_tool,
-        make_order_tool,
-        get_categories_tool,
-    ]
     llm_temperature: float = 0.2
     agent_verbose: bool = False
     return_intermediate_steps: bool = False
@@ -58,11 +43,14 @@ if __name__ == "__main__":
     search_advanced_service = SearchAdvancedService(collection_name=collection_name)
     get_categories_service = GetCategoriesService(collection_name=collection_name)
 
-    init_search_advanced_service(search_advanced_service)
-    init_get_categories_service(get_categories_service)
-    init_search_basic_service(search_advanced_service)
-
-    chat_bot_service = ChatbotService()
+    chat_bot_service = ChatbotService(
+        tools=[
+            SearchBasicTool(search_advanced_service=search_advanced_service),
+            # SearchAdvancedTool(search_advanced_service=search_advanced_service),
+            GetCategoriesTool(get_categories_service=get_categories_service),
+            make_order_tool,
+        ],
+    )
     chat_history = []
 
     # Example usage
