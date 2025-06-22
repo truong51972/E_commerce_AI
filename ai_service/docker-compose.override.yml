@@ -31,3 +31,11 @@ services:
   attu:
     ports:
       - 3000:3000
+
+  database:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"

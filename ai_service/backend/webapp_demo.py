@@ -5,14 +5,14 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_core.messages import ToolMessage
 
-from core.services.chatbot.tools.get_categories_tool import init_get_categories_service
-from core.services.chatbot.tools.search_advanced_tool import (
+from src.services.chatbot.tools.get_categories_tool import init_get_categories_service
+from src.services.chatbot.tools.search_advanced_tool import (
     init_search_advanced_service,
 )
-from core.services.chatbot.tools.search_basic_tool import init_search_basic_service
-from core.services.chatbot.v5.chatbot_service import ChatbotService
-from core.services.product.get_categories_service import GetCategoriesService
-from core.services.product.search_advanced_service import SearchAdvancedService
+from src.services.chatbot.tools.search_basic_tool import init_search_basic_service
+from src.services.chatbot.v5.chatbot_service import ChatbotService
+from src.services.product.get_categories_service import GetCategoriesService
+from src.services.product.search_advanced_service import SearchAdvancedService
 
 load_dotenv()
 langchain.debug = True
