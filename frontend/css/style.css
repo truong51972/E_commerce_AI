@@ -1,0 +1,213 @@
+.main {
+    padding-top: 2rem;
+}
+
+.stApp>header {
+    background-color: transparent;
+}
+
+.header-container {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: white;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.tool-details {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+/* Enhanced Chat Message Styling */
+.chat-message {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-user {
+    background-color: #f0f7ff;
+    border-left: 0;
+    border-right: 4px solid #4361ee;
+    margin-left: 0.5rem;
+    margin-right: 2rem;
+    text-align: right;
+}
+
+.message-assistant {
+    background-color: #f8f9fa;
+    border-left: 4px solid #667eea;
+    border-right: 0;
+    margin-right: 0.5rem;
+    margin-left: 2rem;
+    text-align: left;
+}
+
+/* Điều chỉnh header tin nhắn người dùng */
+.message-user .chat-header {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.message-user .chat-avatar {
+    margin-right: 0;
+    margin-left: 0.8rem;
+}
+
+/* Điều chỉnh timestamp */
+.message-user .message-timestamp {
+    left: 0.8rem;
+    right: auto;
+}
+
+/* Điều chỉnh container tool info */
+.message-user .tool-info-container {
+    text-align: left;
+}
+
+.message-timestamp {
+    font-size: 0.7rem;
+    color: #adb5bd;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.8rem;
+}
+
+.message-content {
+    margin-top: 0.5rem;
+    line-height: 1.5;
+}
+
+.tool-info-container {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-top: 0.8rem;
+    overflow: hidden;
+}
+
+.tool-header {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    background-color: #e9ecef;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.tool-header:hover {
+    background-color: #dee2e6;
+}
+
+.tool-header-icon {
+    margin-right: 0.5rem;
+    color: #6c757d;
+}
+
+.tool-header-text {
+    font-weight: 500;
+    color: #495057;
+}
+
+.tool-body {
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.tool-section {
+    margin-bottom: 0.8rem;
+}
+
+.tool-section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.4rem;
+}
+
+.chat-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: white;
+    margin-right: 0.8rem;
+}
+
+.avatar-user {
+    background-color: #4361ee;
+}
+
+.avatar-assistant {
+    background-color: #667eea;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.chat-name {
+    font-weight: 500;
+    color: #212529;
+}
+
+.chat-divider {
+    margin: 1.5rem 0;
+    text-align: center;
+    position: relative;
+}
+
+.chat-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #e9ecef;
+    z-index: -1;
+}
+
+.chat-divider-text {
+    background-color: white;
+    padding: 0 1rem;
+    font-size: 0.8rem;
+    color: #adb5bd;
+}

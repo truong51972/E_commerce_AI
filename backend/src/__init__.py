@@ -37,7 +37,7 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 REDIS_DB = int(os.getenv("REDIS_DB", "0"))
 
 # Create SQLAlchemy engine
-engine = create_engine(DATABASE_URL, echo=DEBUG)
+engine = create_engine(DATABASE_URL)
 
 # Create Redis client
 redis_client = redis.Redis(
@@ -113,11 +113,11 @@ LOGGING_CONFIG = {
             "handlers": ["console", "error_file"],
             "propagate": False,
         },
-        "sqlalchemy.engine": {
-            "level": "INFO" if DEBUG else "WARNING",
-            "handlers": ["console", "file"],
-            "propagate": False,
-        },
+        # "sqlalchemy.engine": {
+        #     "level": "INFO" if DEBUG else "WARNING",
+        #     "handlers": ["console", "file"],
+        #     "propagate": False,
+        # },
         "redis": {
             "level": "WARNING",
             "handlers": ["console", "file"],

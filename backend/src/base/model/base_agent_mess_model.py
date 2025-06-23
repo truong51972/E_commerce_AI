@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 # for validation
 from pydantic import (
@@ -13,7 +14,8 @@ class BaseAgentMessModel(BaseModel):
     Represents the state of an AI agent, including its name, description, and current status.
     """
 
-    session_id: str = Field(
+    session_id: Optional[str] = Field(
+        default=None,
         description="Unique identifier for the session",
         examples=["00000000-0000-0000-0000-000000000000"],
     )
