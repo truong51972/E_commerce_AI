@@ -3,8 +3,11 @@ import logging.config
 import os
 from pathlib import Path
 
+import dotenv
 import redis
 from sqlmodel import create_engine
+
+dotenv.load_dotenv()
 
 POSTGRES_DB = os.getenv("POSTGRES_DB", "backend_database")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "admin")
@@ -22,6 +25,11 @@ DATABASE_URL = "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
 )
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
+MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
+MILVUS_TOKEN = os.getenv("MILVUS_TOKEN", "root:Milvus")
+
+MILVUS_URI = "http://{}:{}".format(MILVUS_HOST, MILVUS_PORT)
 
 # Redis configuration
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -35,6 +43,7 @@ engine = create_engine(DATABASE_URL, echo=DEBUG)
 redis_client = redis.Redis(
     host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True
 )
+
 
 # Tạo thư mục logs nếu chưa tồn tại
 LOG_DIR = Path(__file__).parent.parent / "logs"

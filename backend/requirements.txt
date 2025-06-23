@@ -1,11 +1,12 @@
 fastapi==0.115.13
 sqlmodel==0.0.24
-# gunicorn==23.0.0
+gunicorn==23.0.0
 redis==6.2.0
 # For running Postgres Database
 psycopg2-binary==2.9.10 
 
 python-dotenv==1.0.1
+python-json-logger==3.3.0
 
 pytest==8.3.5
 

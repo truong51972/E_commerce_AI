@@ -1,12 +1,12 @@
-import dotenv
 from fastapi import FastAPI
 
 from src.api import all_routers
 
-dotenv.load_dotenv()
-
-app = FastAPI()
-
+app = FastAPI(
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+)
 
 for router in all_routers:
-    app.include_router(router)
+    app.include_router(router, prefix="/api")

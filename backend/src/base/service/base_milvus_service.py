@@ -4,15 +4,16 @@ import logging
 # for validation
 from pydantic import BaseModel, Field, model_validator
 from pymilvus import connections, utility
+from src import MILVUS_URI, MILVUS_TOKEN
 
 
 class BaseMilvusService(BaseModel):
     milvus_uri: str = Field(
-        default="http://localhost:19530",
+        default=MILVUS_URI,
         min_length=10,
         max_length=100,
     )
-    milvus_token: str = Field(default="root:Milvus", min_length=5, max_length=100)
+    milvus_token: str = Field(default=MILVUS_TOKEN, min_length=5, max_length=100)
     collection_name: str = Field(
         default="default_collection_name", min_length=1, max_length=100
     )

@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/")
 def read_root():
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/api/docs")
 
 
 @router.get("/health")

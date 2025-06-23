@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "backend.wsgi:application"]
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "main:app"]
