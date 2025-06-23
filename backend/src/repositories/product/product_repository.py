@@ -1,4 +1,4 @@
-# src.models.product.product_model
+# src.repositories.product.product_repository
 import logging
 from typing import List
 

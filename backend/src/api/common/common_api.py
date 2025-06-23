@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 
@@ -21,5 +23,6 @@ def clear_cache():
     """
     Endpoint to clear the Redis cache.
     """
+    logging.info("Clearing Redis cache...")
     redis_client.flushdb()
     return {"status": "Cache cleared"}

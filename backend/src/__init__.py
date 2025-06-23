@@ -1,5 +1,7 @@
 import logging
+import logging.config
 import os
+from pathlib import Path
 
 import redis
 from sqlmodel import create_engine
@@ -34,4 +36,85 @@ redis_client = redis.Redis(
     host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True
 )
 
-logger = logging.getLogger("uvicorn")
+# Tạo thư mục logs nếu chưa tồn tại
+LOG_DIR = Path(__file__).parent.parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+# Cấu hình logging chi tiết
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s:%(lineno)d | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "detailed": {
+            "format": "%(asctime)s | %(levelname)-8s | %(name)-5s | %(module)s.%(funcName)s:%(lineno)d | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(funcName)s %(lineno)d %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "INFO" if not DEBUG else "DEBUG",
+            "formatter": "standard",
+            "stream": "ext://sys.stdout",
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "INFO",
+            "formatter": "detailed",
+            "filename": str(LOG_DIR / "app.log"),
+            "maxBytes": 10485760,  # 10MB
+            "backupCount": 5,
+            "encoding": "utf8",
+        },
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "detailed",
+            "filename": str(LOG_DIR / "error.log"),
+            "maxBytes": 10485760,  # 10MB
+            "backupCount": 5,
+            "encoding": "utf8",
+        },
+    },
+    "root": {
+        "level": "DEBUG" if DEBUG else "INFO",
+        "handlers": ["console", "file"],
+    },
+    "loggers": {
+        "uvicorn": {
+            "level": "INFO",
+            "handlers": ["console", "file"],
+            "propagate": False,
+        },
+        "uvicorn.access": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "uvicorn.error": {
+            "level": "ERROR",
+            "handlers": ["console", "error_file"],
+            "propagate": False,
+        },
+        "sqlalchemy.engine": {
+            "level": "INFO" if DEBUG else "WARNING",
+            "handlers": ["console", "file"],
+            "propagate": False,
+        },
+        "redis": {
+            "level": "WARNING",
+            "handlers": ["console", "file"],
+            "propagate": False,
+        },
+    },
+}
+
+logging.config.dictConfig(LOGGING_CONFIG)

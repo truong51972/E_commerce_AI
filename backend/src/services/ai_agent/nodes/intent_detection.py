@@ -1,10 +1,10 @@
+import logging
 from typing import Any, Dict, Literal
 
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel
 
-from src import logger
 from src.base.service.base_agent_service import BaseAgentService
 
 list_intents = ["product", "greeting", "make_order"]
@@ -27,7 +27,7 @@ class IntentDetector(BaseAgentService):
 
     def __call__(self, state) -> Dict[str, Any]:
         """
-        Phân loại ý định từ 'user_input' trong state và cập nhật state với 'intent' được phát hiện.
+        Classify intent from 'user_input' in state and update state with detected 'intent'.
         """
         user_input = state.user_input
         messages = state.messages
@@ -39,7 +39,7 @@ class IntentDetector(BaseAgentService):
                 "input": user_input,
                 "list_intents": ", ".join(list_intents),
                 "previous_intent": state.intent,
-                "chat_history": messages,  # Giả sử state.messages chứa lịch sử trò chuyện
+                "chat_history": messages,  # Assuming state.messages contains chat history
                 # "format_instructions": output_parser.get_format_instructions(),
             }
 
@@ -51,19 +51,17 @@ class IntentDetector(BaseAgentService):
 
             detected_intent = response.content.strip().lower()
 
-            # (Tùy chọn) Kiểm tra xem intent có nằm trong danh sách hợp lệ không
+            # (Optional) Check if intent is in valid list
             if detected_intent not in list_intents:
-                logger.warning(
-                    f"Cảnh báo: LLM trả về một intent không mong muốn: '{detected_intent}'. Mặc định thành 'greeting'."
+                logging.warning(
+                    f"Warning: LLM returned an unexpected intent: '{detected_intent}'. Defaulting to 'greeting'."
                 )
                 detected_intent = "greeting"
 
-            logger.info(
-                f"Input: '{user_input}' - Intent được phát hiện: {detected_intent}"
-            )
+            logging.info(f"Input: '{user_input}' - Detected intent: {detected_intent}")
 
         except Exception as e:
-            print(f"Lỗi trong quá trình phân loại ý định: {e}")
+            logging.error(f"Error during intent classification: {e}")
             detected_intent = "greeting"
             state["intent_error"] = str(e)
 

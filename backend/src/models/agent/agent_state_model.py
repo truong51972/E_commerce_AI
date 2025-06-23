@@ -13,6 +13,16 @@ class AgentStateModel(BaseAgentMessModel):
     Represents the state of an AI agent, including its name, description, and current status.
     """
 
+    session_id: str = Field(
+        default_factory=str,
+        description="Unique identifier for the session",
+    )
+
+    user_id: str = Field(
+        default_factory=str,
+        description="Unique identifier for the user",
+    )
+
     user_input: str = Field(
         default="user input",
         description="Input from the user",
