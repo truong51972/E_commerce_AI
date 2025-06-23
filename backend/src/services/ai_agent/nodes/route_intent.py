@@ -1,7 +1,7 @@
-from src.services.ai_agent.state.agent_state import AgentState
+from src.models.agent.agent_state_model import AgentStateModel
 
 
-def route_intent(state: AgentState) -> str:
+def route_intent(state: AgentStateModel) -> str:
     """
     Function to determine next node based on detected intent.
     """

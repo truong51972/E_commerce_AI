@@ -1,9 +1,8 @@
 # for validation
-import uuid
 from typing import Optional
 
 # for validation
-from pydantic import BaseModel, Field, model_validator
+from pydantic import Field
 
 from src.base.model.base_agent_mess_model import BaseAgentMessModel
 

@@ -11,7 +11,6 @@ from src.services.ai_agent.nodes.make_order import MakeOder
 from src.services.ai_agent.nodes.product import Product
 from src.services.ai_agent.nodes.route_intent import route_intent
 from src.services.ai_agent.nodes.should_continue import should_continue
-from src.services.ai_agent.state.agent_state import AgentState
 from src.services.ai_agent.tools.product_tools import ProductTools
 from src.services.common.tools.make_order_tool import make_order_tool
 
